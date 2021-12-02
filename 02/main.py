@@ -39,8 +39,28 @@ def follow_course(course, starting_location=Location(0, 0)):
     return location
 
 
+def follow_course_correctly(course, starting_location=Location(0, 0)):
+    aim = 0
+    location = starting_location
+    for command in course:
+        if command.direction == "down":
+            aim += command.units
+        elif command.direction == "up":
+            aim -= command.units
+        elif command.direction == "forward":
+            location += Location(command.units, aim * command.units)
+        else:
+            raise ValueError
+    return location
+
+
 if __name__ == "__main__":
     puzzle_input = read_puzzle_input("input.txt")
+    print("Part 1")
     target_location = follow_course(puzzle_input)
+    print(target_location)
+    print(target_location.distance * target_location.depth)
+    print("Part 2")
+    target_location = follow_course_correctly(puzzle_input)
     print(target_location)
     print(target_location.distance * target_location.depth)
