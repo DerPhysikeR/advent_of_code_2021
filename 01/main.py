@@ -13,20 +13,18 @@ def count_depth_increases(depth_measurements):
     return depth_increases_counter
 
 
-def sum_sliding_window(values, window_length):
+def sum_sliding_window(values):
     sums = []
     for i, value in enumerate(values):
         try:
-            sums.append(sum(values[i:i+3]))
+            sums.append(sum(values[i : i + 3]))
         except IndexError:
-            pass
+            break
     return sums
 
 
-def count_windowed_depth_increases(depth_measurements, window_length=3):
-    sliding_window_sums = sum_sliding_window(
-        depth_measurements, window_length=window_length
-    )
+def count_windowed_depth_increases(depth_measurements):
+    sliding_window_sums = sum_sliding_window(depth_measurements)
     return count_depth_increases(sliding_window_sums)
 
 
