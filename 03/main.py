@@ -18,7 +18,7 @@ def find_most_common_bit(bits, fill_value=None):
             return fill_value
 
 
-def find_most_commnon_bits(binary_number_strings, fill_value=None):
+def find_most_commnon_bits(binary_number_strings):
     digits = []
     for idx in range(len(binary_number_strings[0])):
         digits.append(find_most_common_bit([n[idx] for n in binary_number_strings]))
