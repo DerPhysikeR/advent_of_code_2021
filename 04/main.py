@@ -4,7 +4,7 @@ class BingoBoard:
         self._number_set = set().union(*self.numbers)
         self._hit_numbers = set()
         self._row_sets = [set(row) for row in self.numbers]
-        self._col_sets = [set(col) for col in list(map(list, zip(*self.numbers)))]
+        self._col_sets = [set(col) for col in zip(*self.numbers)]
 
     def __getitem__(self, key):
         return self.numbers[key]
