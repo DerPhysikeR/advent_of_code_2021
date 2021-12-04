@@ -48,5 +48,19 @@ def find_first_winning_board_score(numbers_to_call, bingo_boards):
                 return number * bingo_board.score()
 
 
+def find_last_winning_board_score(numbers_to_call, bingo_boards):
+    for number in numbers_to_call:
+        filtered_bingo_boards = []
+        for bingo_board in bingo_boards:
+            if not bingo_board.call_number(number):
+                filtered_bingo_boards.append(bingo_board)
+        bingo_boards = filtered_bingo_boards
+        if len(bingo_boards) == 1:
+            last_board = bingo_boards[0]
+        if len(bingo_boards) == 0:
+            return number * last_board.score()
+
+
 if __name__ == "__main__":
     print(find_first_winning_board_score(*read_puzzle_input("input.txt")))
+    print(find_last_winning_board_score(*read_puzzle_input("input.txt")))

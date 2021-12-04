@@ -2,6 +2,7 @@ from main import (
     BingoBoard,
     read_puzzle_input,
     find_first_winning_board_score,
+    find_last_winning_board_score,
 )
 
 
@@ -27,3 +28,7 @@ def test_read_puzzle_input():
 
 def test_find_first_winning_board_score():
     assert 4512 == find_first_winning_board_score(*read_puzzle_input("test_input.txt"))
+
+
+def test_find_last_winning_board_score():
+    assert 1924 == find_last_winning_board_score(*read_puzzle_input("test_input.txt"))
