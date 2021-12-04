@@ -1,3 +1,6 @@
+from itertools import chain
+
+
 class BingoBoard:
     def __init__(self, numbers):
         self.numbers = numbers
@@ -10,11 +13,8 @@ class BingoBoard:
         return self.numbers[key]
 
     def _check_if_won(self):
-        for rs in self._row_sets:
-            if rs.issubset(self._hit_numbers):
-                return True
-        for cs in self._col_sets:
-            if cs.issubset(self._hit_numbers):
+        for s in chain(self._row_sets, self._col_sets):
+            if s.issubset(self._hit_numbers):
                 return True
         return False
 
