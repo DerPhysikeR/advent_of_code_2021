@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections import defaultdict
-from typing import List, Iterator, NamedTuple, DefaultDict
+from typing import DefaultDict, Iterator, List, NamedTuple
 from parse import parse
 
 
@@ -28,11 +28,11 @@ class Line(NamedTuple):
 
 
 def find_delta(c1: int, c2: int) -> int:
-    if c1 == c2:
-        return 0
     if c1 < c2:
         return 1
-    return -1
+    if c1 > c2:
+        return -1
+    return 0
 
 
 def parse_line(line: str) -> Line:
