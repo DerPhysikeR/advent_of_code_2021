@@ -1,6 +1,7 @@
 from __future__ import annotations
 from collections import defaultdict
 from typing import List, Iterator, NamedTuple, DefaultDict
+from parse import parse
 
 
 class Point(NamedTuple):
@@ -35,11 +36,8 @@ def find_delta(c1: int, c2: int) -> int:
 
 
 def parse_line(line: str) -> Line:
-    point_strings: List[str] = line.split(" -> ")
-    points: List[List[int]] = [
-        [int(c) for c in point.split(",")] for point in point_strings
-    ]
-    return Line(*[Point(*p) for p in points])
+    p: dict = parse("{sx:d},{sy:d} -> {ex:d},{ey:d}", line).named
+    return Line(Point(p["sx"], p["sy"]), Point(p["ex"], p["ey"]))
 
 
 def read_puzzle_input(filename: str) -> List[Line]:
