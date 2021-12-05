@@ -2,24 +2,37 @@ from collections import defaultdict, namedtuple
 from typing import List, Iterator
 
 
-Point = namedtuple("Point", "x, y")
+class Point(namedtuple("Point", "x, y")):
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __mul__(self, number):
+        return Point(self.x * number, self.y * number)
+
+    def __rmul__(self, number):
+        return self * number
+
 
 Line = namedtuple("Line", "start, end")
 
 
+def find_delta(c1: int, c2: int) -> int:
+    if c1 == c2:
+        return 0
+    if c1 < c2:
+        return 1
+    return -1
+
+
 def draw_line(line: Line) -> Iterator[Point]:
-    if check_if_horizontal(line):
-        step = 1 if line.start.x < line.end.x else -1
-        for x in range(line.start.x, line.end.x + step, step):
-            yield Point(x, line.start.y)
-    elif check_if_vertical(line):
-        step = 1 if line.start.y < line.end.y else -1
-        for y in range(line.start.y, line.end.y + step, step):
-            yield Point(line.start.x, y)
-    else:
-        raise NotImplementedError(
-            "Only horizontal and vertical lines are currently possible"
-        )
+    dx = find_delta(line.start.x, line.end.x)
+    dy = find_delta(line.start.y, line.end.y)
+    delta = Point(dx, dy)
+    point = line.start
+    while point != line.end:
+        yield point
+        point += delta
+    yield line.end
 
 
 def parse_line(line: str) -> Line:
@@ -57,3 +70,4 @@ if __name__ == "__main__":
     lines = read_puzzle_input("input.txt")
     orthogonal_lines = [line for line in lines if check_if_orthogonal(line)]
     print(count_overlapping_points(orthogonal_lines))
+    print(count_overlapping_points(lines))

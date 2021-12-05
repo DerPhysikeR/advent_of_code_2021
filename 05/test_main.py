@@ -24,7 +24,15 @@ def test_check_if_orthogonal(line: Line, is_orthogonal: bool):
     assert is_orthogonal == check_if_orthogonal(line)
 
 
-def test_count_overlapping_points():
-    lines = read_puzzle_input("test_input.txt")
+@pytest.fixture
+def lines():
+    return read_puzzle_input("test_input.txt")
+
+
+def test_count_overlapping_points_with_orthogonal_lines_only(lines):
     orthogonal_lines = [line for line in lines if check_if_orthogonal(line)]
     assert 5 == count_overlapping_points(orthogonal_lines)
+
+
+def test_count_overlapping_points_with_all_lines(lines):
+    assert 12 == count_overlapping_points(lines)
