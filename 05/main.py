@@ -1,13 +1,29 @@
-from collections import defaultdict, namedtuple
-from typing import List, Iterator
+from __future__ import annotations
+from collections import defaultdict
+from typing import List, Iterator, NamedTuple, DefaultDict
 
 
-class Point(namedtuple("Point", "x, y")):
-    def __add__(self, other):
+class Point(NamedTuple):
+    x: int
+    y: int
+
+    def __add__(self, other: Point):
         return Point(self.x + other.x, self.y + other.y)
 
 
-Line = namedtuple("Line", "start, end")
+class Line(NamedTuple):
+    start: Point
+    end: Point
+
+    def draw(self) -> Iterator[Point]:
+        dx = find_delta(self.start.x, self.end.x)
+        dy = find_delta(self.start.y, self.end.y)
+        delta = Point(dx, dy)
+        point = self.start
+        while point != self.end:
+            yield point
+            point += delta
+        yield self.end
 
 
 def find_delta(c1: int, c2: int) -> int:
@@ -18,20 +34,11 @@ def find_delta(c1: int, c2: int) -> int:
     return -1
 
 
-def draw_line(line: Line) -> Iterator[Point]:
-    dx = find_delta(line.start.x, line.end.x)
-    dy = find_delta(line.start.y, line.end.y)
-    delta = Point(dx, dy)
-    point = line.start
-    while point != line.end:
-        yield point
-        point += delta
-    yield line.end
-
-
 def parse_line(line: str) -> Line:
-    points = line.split(" -> ")
-    points = [[int(c) for c in point.split(",")] for point in points]
+    point_strings: List[str] = line.split(" -> ")
+    points: List[List[int]] = [
+        [int(c) for c in point.split(",")] for point in point_strings
+    ]
     return Line(*[Point(*p) for p in points])
 
 
@@ -45,15 +52,15 @@ def check_if_orthogonal(line: Line):
 
 
 def count_overlapping_points(lines: List[Line]):
-    board = defaultdict(int)
+    board: DefaultDict[Point, int] = defaultdict(int)
     for line in lines:
-        for point in draw_line(line):
+        for point in line.draw():
             board[point] += 1
     return len([p for p, c in board.items() if c > 1])
 
 
 if __name__ == "__main__":
-    lines = read_puzzle_input("input.txt")
-    orthogonal_lines = [line for line in lines if check_if_orthogonal(line)]
+    lines: List[Line] = read_puzzle_input("input.txt")
+    orthogonal_lines: List[Line] = [line for line in lines if check_if_orthogonal(line)]
     print(count_overlapping_points(orthogonal_lines))
     print(count_overlapping_points(lines))
