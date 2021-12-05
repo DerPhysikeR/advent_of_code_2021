@@ -17,10 +17,10 @@ class Line(NamedTuple):
     end: Point
 
     def draw(self) -> Iterator[Point]:
-        dx = find_delta(self.start.x, self.end.x)
-        dy = find_delta(self.start.y, self.end.y)
-        delta = Point(dx, dy)
-        point = self.start
+        dx: int = find_delta(self.start.x, self.end.x)
+        dy: int = find_delta(self.start.y, self.end.y)
+        delta: Point = Point(dx, dy)
+        point: Point = self.start
         while point != self.end:
             yield point
             point += delta
