@@ -6,12 +6,6 @@ class Point(namedtuple("Point", "x, y")):
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
 
-    def __mul__(self, number):
-        return Point(self.x * number, self.y * number)
-
-    def __rmul__(self, number):
-        return self * number
-
 
 Line = namedtuple("Line", "start, end")
 
@@ -46,16 +40,8 @@ def read_puzzle_input(filename: str) -> List[Line]:
         return [parse_line(line) for line in stream.read().strip().split("\n")]
 
 
-def check_if_horizontal(line: Line) -> bool:
-    return line.start.y == line.end.y
-
-
-def check_if_vertical(line: Line) -> bool:
-    return line.start.x == line.end.x
-
-
 def check_if_orthogonal(line: Line):
-    return check_if_horizontal(line) or check_if_vertical(line)
+    return line.start.x == line.end.x or line.start.y == line.end.y
 
 
 def count_overlapping_points(lines: List[Line]):
