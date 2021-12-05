@@ -27,10 +27,10 @@ class Line(NamedTuple):
         yield self.end
 
 
-def find_delta(c1: int, c2: int) -> int:
-    if c1 < c2:
+def find_delta(start: int, end: int) -> int:
+    if start < end:
         return 1
-    if c1 > c2:
+    if start > end:
         return -1
     return 0
 
