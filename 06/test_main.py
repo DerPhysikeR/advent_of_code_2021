@@ -15,10 +15,7 @@ def fishies():
 
 
 @pytest.mark.parametrize(
-    "n_days, n_of_fishies", [(18, 26), (80, 5934), (256, 26984457539)]
+    "n_days, n_fishies", [(18, 26), (80, 5934), (256, 26984457539)]
 )
-def test_school_evolve_n_days(fishies, n_days, n_of_fishies):
-    for _ in range(n_days):
-        fishies.evolve()
-        print(fishies)
-    assert n_of_fishies == len(fishies)
+def test_school_evolve_n_days(fishies, n_days, n_fishies):
+    assert n_fishies == len(fishies.evolve(n_days))
