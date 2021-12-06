@@ -19,7 +19,7 @@ class School:
         return self
 
     def __len__(self) -> int:
-        return sum(v for v in self.fishies.values())
+        return sum(self.fishies.values())
 
     def __repr__(self) -> str:
         return f"School({self.fishies})"
