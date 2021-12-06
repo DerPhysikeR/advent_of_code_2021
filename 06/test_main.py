@@ -14,7 +14,9 @@ def fishies():
     return School(read_puzzle_input("test_input.txt"))
 
 
-@pytest.mark.parametrize("n_days, n_of_fishies", [(18, 26), (80, 5934)])
+@pytest.mark.parametrize(
+    "n_days, n_of_fishies", [(18, 26), (80, 5934), (256, 26984457539)]
+)
 def test_school_evolve_n_days(fishies, n_days, n_of_fishies):
     for _ in range(n_days):
         fishies.evolve()
