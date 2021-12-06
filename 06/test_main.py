@@ -18,4 +18,4 @@ def fishies():
     "n_days, n_fishies", [(18, 26), (80, 5934), (256, 26984457539)]
 )
 def test_school_evolve_n_days(fishies, n_days, n_fishies):
-    assert n_fishies == len(fishies.evolve(n_days))
+    assert n_fishies == fishies.evolve(n_days).size

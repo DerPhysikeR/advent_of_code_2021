@@ -18,11 +18,9 @@ class School:
             self.fishies = new_fishies
         return self
 
-    def __len__(self) -> int:
+    @property
+    def size(self):
         return sum(self.fishies.values())
-
-    def __repr__(self) -> str:
-        return f"School({self.fishies})"
 
 
 def read_puzzle_input(filename: str) -> List[int]:
@@ -32,5 +30,5 @@ def read_puzzle_input(filename: str) -> List[int]:
 
 if __name__ == "__main__":
     puzzle_input: List[int] = read_puzzle_input("input.txt")
-    print(len(School(puzzle_input).evolve(80)))
-    print(len(School(puzzle_input).evolve(256)))
+    print(School(puzzle_input).evolve(80).size)
+    print(School(puzzle_input).evolve(256).size)
