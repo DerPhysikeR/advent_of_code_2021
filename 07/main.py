@@ -18,9 +18,9 @@ def find_min_fuel_pos(
 
     if fuel_cost_fun is None:
         fuel_cost_fun = calc_fuel_cost
-    min_pos: int = min(crabs)
-    fuel_cost: int = fuel_cost_fun(crabs, min(crabs))
-    for pos in range(min(crabs), max(crabs) + 1):
+    min_pos: int = max(crabs)
+    fuel_cost: int = fuel_cost_fun(crabs, max(crabs))
+    for pos in range(min(crabs), max(crabs)):
         if (new_fuel_cost := fuel_cost_fun(crabs, pos)) < fuel_cost:
             fuel_cost = new_fuel_cost
             min_pos = pos
