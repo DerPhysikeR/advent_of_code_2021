@@ -2,8 +2,8 @@ import pytest
 from main import (
     read_puzzle_input,
     calc_fuel_cost,
-    find_minimal_fuel_cost_and_position,
-    calc_fuel_cost_correctly,
+    find_min_fuel_pos,
+    calc_fuel_cost_2,
 )
 
 
@@ -17,7 +17,7 @@ def test_read_puzzle_input(crabs):
 
 
 @pytest.mark.parametrize(
-    "alignment_position, fuel_cost",
+    "alignment_pos, fuel_cost",
     [
         (2, 37),
         (1, 41),
@@ -25,12 +25,12 @@ def test_read_puzzle_input(crabs):
         (10, 71),
     ],
 )
-def test_calc_fuel_cost(crabs, alignment_position, fuel_cost):
-    assert fuel_cost == calc_fuel_cost(crabs, alignment_position)
+def test_calc_fuel_cost(crabs, alignment_pos, fuel_cost):
+    assert fuel_cost == calc_fuel_cost(crabs, alignment_pos)
 
 
 @pytest.mark.parametrize(
-    "crabs, alignment_position, fuel_cost",
+    "crabs, alignment_pos, fuel_cost",
     [
         ([16], 5, 66),
         ([1], 5, 10),
@@ -39,15 +39,13 @@ def test_calc_fuel_cost(crabs, alignment_position, fuel_cost):
         ([-1, 2], 0, 4),
     ],
 )
-def test_calc_fuel_cost_correctly(crabs, alignment_position, fuel_cost):
-    assert fuel_cost == calc_fuel_cost_correctly(crabs, alignment_position)
+def test_calc_fuel_cost_2(crabs, alignment_pos, fuel_cost):
+    assert fuel_cost == calc_fuel_cost_2(crabs, alignment_pos)
 
 
-def test_find_minimal_fuel_cost_and_position(crabs):
-    assert (37, 2) == find_minimal_fuel_cost_and_position(crabs)
+def test_find_min_fuel_pos(crabs):
+    assert (37, 2) == find_min_fuel_pos(crabs)
 
 
-def test_find_minimal_fuel_cost_and_position_correctly(crabs):
-    assert (168, 5) == find_minimal_fuel_cost_and_position(
-        crabs, calc_fuel_cost_correctly
-    )
+def test_find_min_fuel_pos_2(crabs):
+    assert (168, 5) == find_min_fuel_pos(crabs, calc_fuel_cost_2)
