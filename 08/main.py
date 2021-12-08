@@ -31,44 +31,40 @@ def count_1478_in_output(entries: List[Entry]):
 PATTERN_LENGTH_TO_DIGIT = {2: 1, 4: 4, 3: 7, 7: 8}
 
 
+def apply_rules(m: Dict[int, Pattern], pattern: Pattern):
+    if (lp := len(pattern)) in PATTERN_LENGTH_TO_DIGIT:
+        m[PATTERN_LENGTH_TO_DIGIT[lp]] = pattern
+        return pattern
+    if (m[8] - m[7]).issubset(pattern):
+        m[6] = pattern
+        return pattern
+    if (m[8] - m[7] - m[4]).issubset(pattern) and m[7].issubset(pattern):
+        m[0] = pattern
+        return pattern
+    if (m[8] - m[7] - m[4]).issubset(pattern) and not m[7].issubset(pattern):
+        m[2] = pattern
+        return pattern
+    if (m[4].union(m[7])).issubset(pattern):
+        m[9] = pattern
+        return pattern
+    if (m[4] - m[1]).issubset(pattern):
+        m[5] = pattern
+        return pattern
+    m[3] = pattern
+    return pattern
+
+
 def find_mapping(entry: Entry) -> Dict[Pattern, int]:
-    e: Set[Pattern] = set(entry.inp)
-    m: Dict[int, Pattern] = {}
-    while len(e) > 0:
-        for pattern in e:
+    patterns_to_check: Set[Pattern] = set(entry.inp)
+    mapping: Dict[int, Pattern] = {}
+    while len(patterns_to_check) > 0:
+        for pattern in patterns_to_check:
             try:
-                if (lp := len(pattern)) in PATTERN_LENGTH_TO_DIGIT:
-                    m[PATTERN_LENGTH_TO_DIGIT[lp]] = pattern
-                    e.remove(pattern)
-                    break
-                if (m[8] - m[7]).issubset(pattern):
-                    m[6] = pattern
-                    e.remove(pattern)
-                    break
-                if (m[8] - m[7] - m[4]).issubset(pattern) and m[7].issubset(pattern):
-                    m[0] = pattern
-                    e.remove(pattern)
-                    break
-                if (m[8] - m[7] - m[4]).issubset(pattern) and not m[7].issubset(
-                    pattern
-                ):
-                    m[2] = pattern
-                    e.remove(pattern)
-                    break
-                if (m[4].union(m[7])).issubset(pattern):
-                    m[9] = pattern
-                    e.remove(pattern)
-                    break
-                if (m[4] - m[1]).issubset(pattern):
-                    m[5] = pattern
-                    e.remove(pattern)
-                    break
-                m[3] = pattern
-                e.remove(pattern)
+                patterns_to_check.remove(apply_rules(mapping, pattern))
                 break
             except KeyError:
                 pass
-    return {v: k for k, v in m.items()}
+    return {v: k for k, v in mapping.items()}
 
 
 def get_output_val(entry: Entry) -> int:
