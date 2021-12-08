@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, Dict, List, Optional, Tuple, NamedTuple, FrozenSet, Set
+from typing import Dict, List, NamedTuple, FrozenSet, Set, Tuple
 
 Pattern = FrozenSet[str]
 
@@ -10,9 +10,11 @@ class Entry(NamedTuple):
 
 
 def parse_entry(line: str) -> Entry:
-    inp_str, out_str = line.strip().split(" | ")
+    inp: str
+    out: str
+    inp, out = line.strip().split(" | ")
     return Entry(
-        [frozenset(i) for i in inp_str.split()], [frozenset(o) for o in out_str.split()]
+        [frozenset(i) for i in inp.split()], [frozenset(o) for o in out.split()]
     )
 
 
@@ -22,54 +24,15 @@ def read_puzzle_input(filename: str) -> List[Entry]:
 
 
 def count_1478_in_output(entries: List[Entry]):
-    out_len = [len(d) for e in entries for d in e.out]
+    out_len: List[int] = [len(d) for e in entries for d in e.out]
     return out_len.count(2) + out_len.count(3) + out_len.count(4) + out_len.count(7)
-
-
-DIGIT_MAP: Dict[Pattern, int] = {
-    frozenset("abcefg"): 0,
-    frozenset("cf"): 1,
-    frozenset("acdeg"): 2,
-    frozenset("acdfg"): 3,
-    frozenset("bcdf"): 4,
-    frozenset("abdfg"): 5,
-    frozenset("abdefg"): 6,
-    frozenset("acf"): 7,
-    frozenset("abcdefg"): 8,
-    frozenset("abcdfg"): 9,
-}
-
-INV_DIGIT_MAP: Dict[int, Pattern] = {v: k for k, v in DIGIT_MAP.items()}
-
-
-LETTERS: FrozenSet[str] = frozenset("abcdefg")
-
-
-def map_to_digit(pattern: Pattern) -> int:
-    return DIGIT_MAP[pattern]
-
-
-def translate_pattern(
-    input_pattern: Pattern, mapping: Dict[Pattern, Pattern]
-) -> Pattern:
-    return mapping[input_pattern]
-
-
-def convert_letter_map_to_map(letter_map: Dict[str, str]) -> Dict[Pattern, Pattern]:
-    pattern_dict = {}
-    for pattern in DIGIT_MAP:
-        new_pattern = set()
-        for letter in pattern:
-            new_pattern.add(letter_map[letter])
-        pattern_dict[pattern] = frozenset(new_pattern)
-    return pattern_dict
 
 
 PATTERN_LENGTH_TO_DIGIT = {2: 1, 4: 4, 3: 7, 7: 8}
 
 
 def find_mapping(entry: Entry) -> Dict[Pattern, int]:
-    e = set(entry.inp)
+    e: Set[Pattern] = set(entry.inp)
     m: Dict[int, Pattern] = {}
     while len(e) > 0:
         for pattern in e:
@@ -111,7 +74,7 @@ def find_mapping(entry: Entry) -> Dict[Pattern, int]:
 def get_output_val(entry: Entry) -> int:
     mapping: Dict[Pattern, int] = find_mapping(entry)
     digits: List[int] = [mapping[p] for p in entry.out]
-    return 1000 * digits[0] + 100 * digits[1] + 10 * digits[2] + digits[3]
+    return sum(10 ** (3 - i) * d for i, d in enumerate(digits))
 
 
 def get_output_val_sum(entries: List[Entry]) -> int:
