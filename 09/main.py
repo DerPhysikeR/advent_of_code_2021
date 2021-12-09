@@ -80,7 +80,7 @@ class HeightMap:
     def to_str_with_marked_basins(self):
         basins: List[Set[Point]] = self.find_all_basins()
         which_basin: Dict[Point, str] = {
-            p: chr(i + 97) for i, basin in enumerate(basins) for p in basin
+            p: chr(i + 200) for i, basin in enumerate(basins) for p in basin
         }
         basin_map: List[List[str]] = []
         for ri, row in enumerate(self.heightmap):
