@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, List, NamedTuple, FrozenSet, Set, Tuple
+from typing import Dict, List, NamedTuple, FrozenSet, Set
 
 Pattern = FrozenSet[str]
 
