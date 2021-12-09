@@ -1,6 +1,6 @@
 from __future__ import annotations
 from math import prod
-from typing import List, NamedTuple, Set, Iterator
+from typing import List, NamedTuple, Set, Iterator, Dict
 
 
 class Point(NamedTuple):
@@ -74,6 +74,21 @@ class HeightMap:
         basin_sizes: List[int] = sorted([len(b) for b in self.find_all_basins()])
         return prod(basin_sizes[-3:])
 
+    def __str__(self) -> str:
+        return "\n".join("".join(str(p) for p in row) for row in self.heightmap)
+
+    def to_str_with_marked_basins(self):
+        basins: List[Set[Point]] = self.find_all_basins()
+        which_basin: Dict[Point, str] = {
+            p: chr(i + 97) for i, basin in enumerate(basins) for p in basin
+        }
+        basin_map: List[List[str]] = []
+        for ri, row in enumerate(self.heightmap):
+            basin_map.append([])
+            for ci, h in enumerate(row):
+                basin_map[ri].append(which_basin.get(Point(ri, ci), str(h)))
+        return "\n".join("".join(c for c in row) for row in basin_map)
+
 
 def read_puzzle_input(filename: str) -> HeightMap:
     with open(filename) as stream:
@@ -84,5 +99,6 @@ def read_puzzle_input(filename: str) -> HeightMap:
 
 if __name__ == "__main__":
     puzzle_input: HeightMap = read_puzzle_input("input.txt")
+    print(puzzle_input.to_str_with_marked_basins())
     print(sum(puzzle_input.get_risk_level(p) for p in puzzle_input.find_low_points()))
     print(puzzle_input.product_of_3_largest_basin_sizes())
