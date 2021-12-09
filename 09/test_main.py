@@ -54,3 +54,20 @@ def test_heightmap_neighbors_in_the_middle(heightmap):
     assert [Point(1, 2), Point(0, 1), Point(1, 0), Point(2, 1)] == list(
         heightmap.neighbors(Point(1, 1))
     )
+
+
+@pytest.mark.parametrize(
+    "point, basin_size",
+    [
+        (Point(0, 1), 3),
+        (Point(0, 9), 9),
+        (Point(2, 2), 14),
+        (Point(4, 6), 9),
+    ],
+)
+def test_heightmap_find_basin_around(heightmap, point, basin_size):
+    assert basin_size == len(heightmap.find_basin_around(point))
+
+
+def test_product_of_3_largest_basin_sizes(heightmap):
+    assert 1134 == heightmap.product_of_3_largest_basin_sizes()
