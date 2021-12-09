@@ -1,13 +1,13 @@
 from __future__ import annotations
 from math import prod
-from typing import Dict, List, NamedTuple, FrozenSet, Set, Iterator
+from typing import List, NamedTuple, Set, Iterator
 
 
 class Point(NamedTuple):
     row: int
     col: int
 
-    def neighbors(self):
+    def neighbors(self) -> Iterator[Point]:
         yield Point(self.row, self.col + 1)
         yield Point(self.row - 1, self.col)
         yield Point(self.row, self.col - 1)
@@ -15,21 +15,21 @@ class Point(NamedTuple):
 
 
 class HeightMap:
-    def __init__(self, heightmap):
+    def __init__(self, heightmap: List[List[int]]):
         self.heightmap = heightmap
 
     def __getitem__(self, key):
         return self.heightmap[key]
 
-    def __call__(self, point):
+    def __call__(self, point: Point) -> int:
         return self.heightmap[point.row][point.col]
 
     @property
-    def width(self):
+    def width(self) -> int:
         return len(self.heightmap[0])
 
     @property
-    def height(self):
+    def height(self) -> int:
         return len(self.heightmap)
 
     def neighbors(self, point: Point) -> Iterator[Point]:
@@ -37,26 +37,24 @@ class HeightMap:
             if (0 <= n.row < self.height) and (0 <= n.col < self.width):
                 yield n
 
-    def find_low_points(self):
-        low_points = []
+    def find_low_points(self) -> List[Point]:
+        low_points: List[Point] = []
         for ri, row in enumerate(self.heightmap):
             for ci, height in enumerate(row):
-                point = Point(ri, ci)
-                if all(
-                    height < self.heightmap[n.row][n.col] for n in self.neighbors(point)
-                ):
+                point: Point = Point(ri, ci)
+                if all(height < self(n) for n in self.neighbors(point)):
                     low_points.append(point)
         return low_points
 
-    def get_risk_level(self, point: Point):
-        return self.heightmap[point.row][point.col] + 1
+    def get_risk_level(self, point: Point) -> int:
+        return self(point) + 1
 
-    def find_basin_around(self, point: Point):
+    def find_basin_around(self, point: Point) -> Set[Point]:
         if self(point) == 9:
             return set()
-        basin = set([point])
-        points_to_check = list(self.neighbors(point))
-        points_checked = set([point])
+        basin: Set[Point] = set([point])
+        points_to_check: List[Point] = list(self.neighbors(point))
+        points_checked: Set[Point] = set([point])
         for ptc in points_to_check:
             points_checked.add(ptc)
             if self(ptc) < 9:
@@ -68,12 +66,12 @@ class HeightMap:
                     points_to_check.append(n)
         return basin
 
-    def find_all_basins(self):
+    def find_all_basins(self) -> List[Set[Point]]:
         low_points = self.find_low_points()
         return [self.find_basin_around(lp) for lp in low_points]
 
-    def product_of_3_largest_basin_sizes(self):
-        basin_sizes = sorted([len(b) for b in self.find_all_basins()])
+    def product_of_3_largest_basin_sizes(self) -> int:
+        basin_sizes: List[int] = sorted([len(b) for b in self.find_all_basins()])
         return prod(basin_sizes[-3:])
 
 
