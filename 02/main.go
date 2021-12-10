@@ -81,8 +81,31 @@ func followCourse(course []Command) Location {
 	return location
 }
 
+func followCourseCorrectly(course []Command) Location {
+	aim := 0
+	location := Location{0, 0}
+	for _, command := range course {
+		switch command.direction {
+		case up:
+			aim -= command.units
+		case down:
+			aim += command.units
+		case forward:
+			location = Location{
+				location.distance + command.units,
+				location.depth + aim*command.units,
+			}
+		}
+	}
+	return location
+}
+
 func main() {
 	puzzleInput := readPuzzleInput("input.txt")
+
 	targetLocation := followCourse(puzzleInput)
 	fmt.Printf("%d\n", targetLocation.depth*targetLocation.distance)
+
+	correcTargetLocation := followCourseCorrectly(puzzleInput)
+	fmt.Printf("%d\n", correcTargetLocation.depth*correcTargetLocation.distance)
 }
