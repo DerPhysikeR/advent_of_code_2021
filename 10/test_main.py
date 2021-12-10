@@ -2,6 +2,7 @@ import pytest
 from main import (
     read_puzzle_input,
     calc_corruptnes_score,
+    calc_incompletness_score,
 )
 
 
@@ -12,3 +13,7 @@ def puzzle_input():
 
 def test_calc_corruptness_score(puzzle_input):
     assert 26397 == calc_corruptnes_score(puzzle_input)
+
+
+def test_calc_incompletness_score(puzzle_input):
+    assert 288957 == calc_incompletness_score(puzzle_input)
