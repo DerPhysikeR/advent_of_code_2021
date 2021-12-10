@@ -38,7 +38,25 @@ func countDepthIncreases(depthMeasurements []int) int {
 	return depthIncreasesCounter
 }
 
+func sumSlidingWindow(values []int) []int {
+	var windowedValues []int
+	for i := range values {
+		if i > len(values)-3 {
+			break
+		}
+		windowedValues = append(windowedValues, values[i]+values[i+1]+values[i+2])
+	}
+	return windowedValues
+}
+
+func countWindowedDepthIncreases(depthMeasurements []int) int {
+	slidingWindowSums := sumSlidingWindow(depthMeasurements)
+	return countDepthIncreases(slidingWindowSums)
+
+}
+
 func main() {
 	puzzleInput := readPuzzleInput("input.txt")
 	fmt.Println(countDepthIncreases(puzzleInput))
+	fmt.Println(countWindowedDepthIncreases(puzzleInput))
 }
