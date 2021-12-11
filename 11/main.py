@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections.abc import ItemsView, Iterable, Iterator
 from itertools import product
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 from time import sleep
 
 
@@ -42,7 +42,7 @@ class Grid:
     def find_flashes(self) -> set[Point]:
         return set([p for p, el in self.items() if el > 9])
 
-    def increment_by_one(self, points: Iterable[Point] = None):
+    def increment_by_one(self, points: Optional[Iterable[Point]] = None):
         if points is None:
             points = self.energy_levels.keys()
         for point in points:
