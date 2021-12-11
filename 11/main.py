@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Dict, List, Tuple, NamedTuple, Iterator, Set
-from itertools import product, count
+from typing import Dict, List, Tuple, NamedTuple, Iterator, Set, ItemsView
+from itertools import product
 
 
 class Point(NamedTuple):
@@ -10,27 +10,23 @@ class Point(NamedTuple):
     def neighbors(self) -> Iterator[Point]:
         d: Tuple[int, int, int] = (-1, 0, 1)
         for dr, dc in product(d, d):
-            if dr == dc == 0:
-                continue
-            yield Point(self.row + dr, self.col + dc)
+            if not dr == dc == 0:
+                yield Point(self.row + dr, self.col + dc)
 
 
 class Grid:
     def __init__(self, energy_levels: List[List[int]]):
-        self.width = len(energy_levels[0])
-        self.height = len(energy_levels)
-        self.energy_levels = {}
+        self.width: int = len(energy_levels[0])
+        self.height: int = len(energy_levels)
+        self.energy_levels: Dict[Point, int] = {}
         for ri, row in enumerate(energy_levels):
             for ci, el in enumerate(row):
                 self.energy_levels[Point(ri, ci)] = el
 
     def _evolve(self) -> int:
-        # increment by one
-        for point in self.energy_levels:
-            self.energy_levels[point] += 1
-        # find all flashes
+        self.increment_by_one()
         flashes: Set[Point] = set([p for p, el in self.items() if el > 9])
-        new_flashes = flashes.copy()
+        new_flashes: Set[Point] = flashes.copy()
         while new_flashes:
             for fl in new_flashes:
                 for neighbor in fl.neighbors():
@@ -43,11 +39,21 @@ class Grid:
             for p, el in self.items():
                 if el > 9 and p not in flashes:
                     new_flashes.add(p)
-        # set flashes to 0
-        for fl in flashes:
-            self[fl] = 0
-
+        self.nullify(flashes)
         return len(flashes)
+
+    def increment_by_one(self, points: List[Point] = None):
+        if points is None:
+            points = list(self.energy_levels.keys())
+        for point in points:
+            try:
+                self[point] += 1
+            except KeyError:
+                pass
+
+    def nullify(self, points: Set[Point]):
+        for point in points:
+            self[point] = 0
 
     def evolve(self, n_steps: int):
         n_flashes: int = 0
@@ -61,20 +67,20 @@ class Grid:
             count += 1
         return count
 
-    def items(self):
+    def items(self) -> ItemsView[Point, int]:
         return self.energy_levels.items()
 
-    def __getitem__(self, point: Point):
+    def __getitem__(self, point: Point) -> int:
         return self.energy_levels[point]
 
-    def __setitem__(self, point: Point, value: int):
+    def __setitem__(self, point: Point, value: int) -> None:
         self.energy_levels[point] = value
 
-    def __str__(self):
-        return "\n".join(
-            "".join(str(self[Point(ri, ci)]) for ci in range(self.width))
-            for ri in range(self.height)
-        )
+    def __str__(self) -> str:
+        rows = []
+        for ri in range(self.height):
+            rows.append("".join(str(self[Point(ri, ci)]) for ci in range(self.width)))
+        return "\n".join(rows)
 
 
 def read_puzzle_input(filename: str) -> List[List[int]]:
