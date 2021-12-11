@@ -20,3 +20,8 @@ def puzzle_input():
 def test_grid_evolve_n_flashes(puzzle_input, n_steps, n_flashes):
     grid = Grid(puzzle_input)
     assert n_flashes == grid.evolve(n_steps)
+
+
+def test_grid_find_first_sync_flash(puzzle_input):
+    grid = Grid(puzzle_input)
+    assert 195 == grid.find_first_sync_flash()

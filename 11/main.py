@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Dict, List, Tuple, NamedTuple, Iterator, Set
-from itertools import product
+from itertools import product, count
 
 
 class Point(NamedTuple):
@@ -55,6 +55,12 @@ class Grid:
             n_flashes += self._evolve()
         return n_flashes
 
+    def find_first_sync_flash(self) -> int:
+        count = 1
+        while len(self.energy_levels) > self._evolve():
+            count += 1
+        return count
+
     def items(self):
         return self.energy_levels.items()
 
@@ -79,3 +85,4 @@ def read_puzzle_input(filename: str) -> List[List[int]]:
 if __name__ == "__main__":
     puzzle_input: List[List[int]] = read_puzzle_input("input.txt")
     print(Grid(puzzle_input).evolve(100))
+    print(Grid(puzzle_input).find_first_sync_flash())
