@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import NamedTuple
 from collections.abc import ItemsView, Iterable, Iterator
 from itertools import product
+from typing import NamedTuple
+from time import sleep
 
 
 class Point(NamedTuple):
@@ -82,6 +83,15 @@ class Grid:
         return "\n".join(rows)
 
 
+def animate_grid(grid: Grid, dt: int):
+    print(grid)
+    while True:
+        grid.evolve(1)
+        sleep(dt)
+        print("-" * grid.width)
+        print(grid)
+
+
 def read_puzzle_input(filename: str) -> list[list[int]]:
     with open(filename) as stream:
         return [[int(n) for n in row] for row in stream.read().strip().split("\n")]
@@ -91,3 +101,4 @@ if __name__ == "__main__":
     puzzle_input: list[list[int]] = read_puzzle_input("input.txt")
     print(Grid(puzzle_input).evolve(100))
     print(Grid(puzzle_input).find_first_sync_flash())
+    animate_grid(Grid(puzzle_input), 1)
