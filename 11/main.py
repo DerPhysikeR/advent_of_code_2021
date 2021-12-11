@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, List, Tuple, NamedTuple, Iterator, Set, ItemsView
+from typing import Dict, List, Tuple, NamedTuple, Iterator, Set, ItemsView, Iterable
 from itertools import product
 
 
@@ -25,26 +25,22 @@ class Grid:
 
     def _evolve(self) -> int:
         self.increment_by_one()
-        flashes: Set[Point] = set([p for p, el in self.items() if el > 9])
+        flashes: Set[Point] = self.find_flashes()
         new_flashes: Set[Point] = flashes.copy()
         while new_flashes:
-            for fl in new_flashes:
-                for neighbor in fl.neighbors():
-                    try:
-                        self[neighbor] += 1
-                    except KeyError:
-                        pass
+            new_flash_neighbors = (n for fl in new_flashes for n in fl.neighbors())
+            self.increment_by_one(new_flash_neighbors)
             flashes = flashes.union(new_flashes)
-            new_flashes = set()
-            for p, el in self.items():
-                if el > 9 and p not in flashes:
-                    new_flashes.add(p)
+            new_flashes = self.find_flashes().difference(flashes)
         self.nullify(flashes)
         return len(flashes)
 
-    def increment_by_one(self, points: List[Point] = None):
+    def find_flashes(self) -> Set[Point]:
+        return set([p for p, el in self.items() if el > 9])
+
+    def increment_by_one(self, points: Iterable[Point] = None):
         if points is None:
-            points = list(self.energy_levels.keys())
+            points = self.energy_levels.keys()
         for point in points:
             try:
                 self[point] += 1
