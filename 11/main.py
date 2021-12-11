@@ -28,7 +28,9 @@ class Grid:
         flashes: Set[Point] = self.find_flashes()
         new_flashes: Set[Point] = flashes.copy()
         while new_flashes:
-            new_flash_neighbors = (n for fl in new_flashes for n in fl.neighbors())
+            new_flash_neighbors: Iterator[Point] = (
+                n for fl in new_flashes for n in fl.neighbors()
+            )
             self.increment_by_one(new_flash_neighbors)
             flashes = flashes.union(new_flashes)
             new_flashes = self.find_flashes().difference(flashes)
