@@ -1,8 +1,15 @@
 from __future__ import annotations
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Callable
 from parse import parse
-
 from collections import defaultdict
+
+
+Filter = Callable[[str, tuple[str, ...]], bool]
+Graph = dict[str, set[str]]
+Path = tuple[str, ...]
+
+START = "start"
+END = "end"
 
 
 class Connection(NamedTuple):
@@ -10,68 +17,56 @@ class Connection(NamedTuple):
     end: str
 
 
-def construct_graph(connections: list[Connection]) -> dict[str, set[str]]:
-    nodes: defaultdict[str, set[str]] = defaultdict(set)
+def construct_graph(connections: list[Connection]) -> Graph:
+    nodes: Graph = defaultdict(set)
     for con in connections:
         nodes[con.start].add(con.end)
         nodes[con.end].add(con.start)
-    return dict(nodes)
+    return nodes
 
 
 def find_paths(
-    graph: dict[str, set[str]], node: str = "start", visited: tuple[str, ...] = None
+    graph: Graph, dont_visit: Filter, node: str = START, visited: Path = None
 ):
     visited = visited + (node,) if visited else (node,)
-    if node == "end":
+    if node == END:
         yield visited
     else:
         for n in graph[node]:
-            if n.islower() and n in visited:
+            if dont_visit(n, visited):
                 continue
-            yield from find_paths(graph, n, visited)
+            yield from find_paths(graph, dont_visit, node=n, visited=visited)
 
 
-def twice_visited(path: tuple[str, ...], n: str) -> bool:
-    if n not in path:
+def twice_visited(node: str, path: Path) -> bool:
+    return node.islower() and node in path
+
+
+def twice_visited_2(node: str, path: Path) -> bool:
+    if not twice_visited(node, path):
         return False
-    if n == "start":
+    if node == START:
         return True
-    lower_nodes = [n for n in path if n.islower()]
-    set_lower_nodes = set(lower_nodes)
-    if len(set_lower_nodes) == len(lower_nodes):
+    if len(lower_nodes := [n for n in path if n.islower()]) == len(set(lower_nodes)):
         return False
     return True
 
 
-def find_paths_revisited(
-    graph: dict[str, set[str]], node: str = "start", visited: tuple[str, ...] = None
-):
-    visited = visited + (node,) if visited else (node,)
-    if node == "end":
-        yield visited
-    else:
-        for n in graph[node]:
-            if n.islower() and twice_visited(visited, n):
-                continue
-            yield from find_paths_revisited(graph, n, visited)
-
-
-def calc_n_paths(connections: list[Connection]):
-    graph: dict[str, set[str]] = construct_graph(connections)
-    return sum(1 for _ in find_paths(graph))
+def calc_n_paths(connections: list[Connection], dont_visit: Filter = twice_visited):
+    graph: Graph = construct_graph(connections)
+    return sum(1 for _ in find_paths(graph, dont_visit=dont_visit))
 
 
 def calc_n_paths_revisited(connections: list[Connection]):
-    graph: dict[str, set[str]] = construct_graph(connections)
-    return sum(1 for _ in find_paths_revisited(graph))
+    return calc_n_paths(connections, twice_visited_2)
 
 
 def read_puzzle_input(filename: str) -> list[Connection]:
     with open(filename) as stream:
-        connections = []
+        connections: list[Connection] = []
         for line in stream.read().strip().split("\n"):
-            p: dict = parse("{start}-{end}", line).named
-            connections.append(Connection(p["start"], p["end"]))
+            p: dict[str, str] = parse("{node1}-{node2}", line).named
+            connections.append(Connection(p["node1"], p["node2"]))
     return connections
 
 
