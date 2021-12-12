@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, Iterator, NamedTuple
+from typing import Callable, Iterator, NamedTuple, Optional
 from parse import parse
 from collections import defaultdict
 
@@ -26,7 +26,7 @@ def construct_graph(connections: list[Connection]) -> Graph:
 
 
 def find_paths(
-    graph: Graph, dont_visit: Filter, cave: str = START, visited: Path = None
+    graph: Graph, dont_visit: Filter, cave: str = START, visited: Optional[Path] = None
 ) -> Iterator[Path]:
     visited = visited + (cave,) if visited else (cave,)
     if cave == END:
