@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import NamedTuple, Callable
+from typing import Callable, Iterator, NamedTuple
 from parse import parse
 from collections import defaultdict
 
@@ -27,7 +27,7 @@ def construct_graph(connections: list[Connection]) -> Graph:
 
 def find_paths(
     graph: Graph, dont_visit: Filter, node: str = START, visited: Path = None
-):
+) -> Iterator[Path]:
     visited = visited + (node,) if visited else (node,)
     if node == END:
         yield visited
@@ -52,12 +52,14 @@ def twice_visited_2(node: str, path: Path) -> bool:
     return True
 
 
-def calc_n_paths(connections: list[Connection], dont_visit: Filter = twice_visited):
+def calc_n_paths(
+    connections: list[Connection], dont_visit: Filter = twice_visited
+) -> int:
     graph: Graph = construct_graph(connections)
     return sum(1 for _ in find_paths(graph, dont_visit=dont_visit))
 
 
-def calc_n_paths_revisited(connections: list[Connection]):
+def calc_n_paths_revisited(connections: list[Connection]) -> int:
     return calc_n_paths(connections, twice_visited_2)
 
 
