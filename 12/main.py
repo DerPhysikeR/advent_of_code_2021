@@ -18,36 +18,36 @@ class Connection(NamedTuple):
 
 
 def construct_graph(connections: list[Connection]) -> Graph:
-    nodes: Graph = defaultdict(set)
+    caves: Graph = defaultdict(set)
     for con in connections:
-        nodes[con.start].add(con.end)
-        nodes[con.end].add(con.start)
-    return nodes
+        caves[con.start].add(con.end)
+        caves[con.end].add(con.start)
+    return caves
 
 
 def find_paths(
-    graph: Graph, dont_visit: Filter, node: str = START, visited: Path = None
+    graph: Graph, dont_visit: Filter, cave: str = START, visited: Path = None
 ) -> Iterator[Path]:
-    visited = visited + (node,) if visited else (node,)
-    if node == END:
+    visited = visited + (cave,) if visited else (cave,)
+    if cave == END:
         yield visited
     else:
-        for next_node in graph[node]:
-            if dont_visit(next_node, visited):
+        for next_cave in graph[cave]:
+            if dont_visit(next_cave, visited):
                 continue
-            yield from find_paths(graph, dont_visit, next_node, visited)
+            yield from find_paths(graph, dont_visit, next_cave, visited)
 
 
-def twice_visited(node: str, path: Path) -> bool:
-    return node.islower() and node in path
+def twice_visited(cave: str, path: Path) -> bool:
+    return cave.islower() and cave in path
 
 
-def twice_visited_2(node: str, path: Path) -> bool:
-    if not twice_visited(node, path):
+def twice_visited_2(cave: str, path: Path) -> bool:
+    if not twice_visited(cave, path):
         return False
-    if node == START:
+    if cave == START:
         return True
-    if len(lower_nodes := [n for n in path if n.islower()]) == len(set(lower_nodes)):
+    if len(lower_caves := [n for n in path if n.islower()]) == len(set(lower_caves)):
         return False
     return True
 
@@ -67,8 +67,8 @@ def read_puzzle_input(filename: str) -> list[Connection]:
     with open(filename) as stream:
         connections: list[Connection] = []
         for line in stream.read().strip().split("\n"):
-            p: dict[str, str] = parse("{node1}-{node2}", line).named
-            connections.append(Connection(p["node1"], p["node2"]))
+            p: dict[str, str] = parse("{cave1}-{cave2}", line).named
+            connections.append(Connection(p["cave1"], p["cave2"]))
     return connections
 
 
