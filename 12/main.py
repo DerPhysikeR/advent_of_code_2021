@@ -32,10 +32,10 @@ def find_paths(
     if node == END:
         yield visited
     else:
-        for n in graph[node]:
-            if dont_visit(n, visited):
+        for next_node in graph[node]:
+            if dont_visit(next_node, visited):
                 continue
-            yield from find_paths(graph, dont_visit, node=n, visited=visited)
+            yield from find_paths(graph, dont_visit, next_node, visited)
 
 
 def twice_visited(node: str, path: Path) -> bool:
