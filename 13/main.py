@@ -65,7 +65,7 @@ class Paper:
         for y in range(minp.y, maxp.y + 1):
             rows.append(
                 "".join(
-                    "#" if Point(x, y) in self.points else "."
+                    "█" if Point(x, y) in self.points else "."
                     for x in range(minp.x, maxp.x + 1)
                 )
             )
