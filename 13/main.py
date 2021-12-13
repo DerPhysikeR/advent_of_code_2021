@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Iterable, NamedTuple
+from reprlib import repr
 from parse import parse
 
 
@@ -47,7 +48,7 @@ class Paper:
         return len(self.points)
 
     def __repr__(self) -> str:
-        return f"Paper(points={self.points})"
+        return f"Paper(points={repr(self.points)})"
 
     def min_max(self) -> tuple[Point, Point]:
         min_x: int = min(p.x for p in self.points)
