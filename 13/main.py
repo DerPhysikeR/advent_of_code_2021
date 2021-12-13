@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import Iterable, NamedTuple
 from reprlib import repr
+from typing import Iterable, NamedTuple
 from parse import parse
 
 
@@ -8,11 +8,11 @@ class Point(NamedTuple):
     x: int
     y: int
 
-    def __getitem__(self, coord: str):
+    def __getitem__(self, coord: str) -> int:
         assert coord in "xy"
         return self.x if coord == "x" else self.y
 
-    def change(self, coord: str, value: int):
+    def change(self, coord: str, value: int) -> Point:
         assert coord in "xy"
         if coord == "x":
             return Point(value, self.y)
