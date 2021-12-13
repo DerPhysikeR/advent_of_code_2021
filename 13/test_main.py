@@ -7,7 +7,6 @@ from main import (
 )
 
 
-
 @pytest.fixture
 def puzzle_input():
     return read_puzzle_input("test_input.txt")
@@ -25,5 +24,5 @@ def test_paper_fold(puzzle_input):
     points, folds = puzzle_input
     paper = Paper(points)
     assert 18 == len(paper)
-    assert 17 == len(paper := paper.fold(folds[0]))
-    assert 16 == len(paper := paper.fold(folds[1]))
+    assert 17 == len(paper.fold(folds[0]))
+    assert 16 == len(paper.folds(folds))

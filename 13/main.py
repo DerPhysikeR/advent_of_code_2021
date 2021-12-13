@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import NamedTuple
+from typing import Iterable, NamedTuple
 from parse import parse
 
 
@@ -25,22 +25,28 @@ class Fold(NamedTuple):
 
 class Paper:
     def __init__(self, points: set[Point]):
-        self.points = points
+        self.points: set[Point] = points
 
-    def fold(self, fold: Fold):
+    def folds(self, folds: Iterable[Fold]) -> Paper:
+        paper: Paper = self
+        for fold in folds:
+            paper = paper.fold(fold)
+        return paper
+
+    def fold(self, fold: Fold) -> Paper:
         points: set[Point] = set()
         for point in self.points:
             if point[fold.coord] < fold.value:
                 points.add(point)
             else:
-                new_value = 2 * fold.value - point[fold.coord]
+                new_value: int = 2 * fold.value - point[fold.coord]
                 points.add(point.change(fold.coord, new_value))
         return Paper(points)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.points)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Paper(points={self.points})"
 
     def min_max(self) -> tuple[Point, Point]:
@@ -50,14 +56,18 @@ class Paper:
         max_y: int = max(p.y for p in self.points)
         return Point(min_x, min_y), Point(max_x, max_y)
 
-    def __str__(self):
+    def __str__(self) -> str:
         minp: Point
         maxp: Point
         minp, maxp = self.min_max()
         rows: list[str] = []
         for y in range(minp.y, maxp.y + 1):
-            rows.append("".join("#" if Point(x, y) in self.points else "." for x in
-                range(minp.x, maxp.x + 1)))
+            rows.append(
+                "".join(
+                    "#" if Point(x, y) in self.points else "."
+                    for x in range(minp.x, maxp.x + 1)
+                )
+            )
         return "\n".join(rows)
 
 
@@ -78,4 +88,6 @@ if __name__ == "__main__":
     points: set[Point]
     folds: list[Fold]
     points, folds = read_puzzle_input("input.txt")
-    print(len(Paper(points).fold(folds[0])))
+    paper: Paper = Paper(points)
+    print(len(paper.fold(folds[0])))
+    print(paper.folds(folds))
