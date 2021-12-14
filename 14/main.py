@@ -91,8 +91,6 @@ def read_puzzle_input(filename: str) -> tuple[str, dict[str, str]]:
 
 
 if __name__ == "__main__":
-    polymer: Polymer = Polymer(*read_puzzle_input("input.txt"))
-    print(polymer.evolve(10).mc_minus_lc_element_count())
-
-    fast_polymer: FastPolymer = FastPolymer(*read_puzzle_input("input.txt"))
-    print(fast_polymer.evolve(40).mc_minus_lc_element_count())
+    puzzle_input: tuple[str, dict[str, str]] = read_puzzle_input("input.txt")
+    print(Polymer(*puzzle_input).evolve(10).mc_minus_lc_element_count())
+    print(FastPolymer(*puzzle_input).evolve(40).mc_minus_lc_element_count())
