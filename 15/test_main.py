@@ -1,6 +1,6 @@
 import pytest
 from main import (
-    Maze,
+    Dijkstra,
     read_puzzle_input,
 )
 
@@ -10,14 +10,9 @@ def puzzle_input():
     return read_puzzle_input("test_input.txt")
 
 
-def test_maze_risk_of_shortest_path(puzzle_input):
-    maze = Maze(puzzle_input)
-    assert 40 == maze.risk_of_path_without_start(maze.find_shortest_path())
-
-
-def test_maze_find_lowest_risk_cumsum(puzzle_input):
-    maze = Maze(puzzle_input)
-    assert 40 == maze.find_lowest_risk_cumsum()
+def test_dijkstra_find_lowest_risk(puzzle_input):
+    maze = Dijkstra(puzzle_input)
+    assert 40 == maze.find_lowest_risk()
 
 
 # @pytest.fixture
