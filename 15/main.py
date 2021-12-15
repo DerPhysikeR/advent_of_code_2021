@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Iterator, NamedTuple
 from queue import PriorityQueue
 from functools import lru_cache
+import numpy as np
 
 
 class Point(NamedTuple):
@@ -87,8 +88,17 @@ class Dijkstra:
         return self.dijkstra(Point(self.max_col, self.max_row))
 
 
+def expand_puzzle_input(puzzle_input):
+    grid = np.array(puzzle_input)
+    expanded_grid = np.block([[grid + i + j for i in range(5)] for j in range(5)])
+    expanded_grid[expanded_grid > 9] = expanded_grid[expanded_grid > 9] - 9
+    return expanded_grid.tolist()
+
+
 if __name__ == "__main__":
-    print(CumSum(read_puzzle_input("test_input.txt")).find_lowest_risk())
-    print(CumSum(read_puzzle_input("input.txt")).find_lowest_risk())
-    print(Dijkstra(read_puzzle_input("test_input.txt")).find_lowest_risk())
-    print(Dijkstra(read_puzzle_input("input.txt")).find_lowest_risk())
+    puzzle_input = read_puzzle_input("input.txt")
+    print(CumSum(puzzle_input).find_lowest_risk())
+    print(Dijkstra(puzzle_input).find_lowest_risk())
+
+    expanded_puzzle_input = expand_puzzle_input(puzzle_input)
+    print(Dijkstra(expanded_puzzle_input).find_lowest_risk())
