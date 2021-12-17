@@ -4,6 +4,7 @@ from main import (
     to_bin,
     sum_versions,
     eval_transmission,
+    main,
 )
 
 
@@ -49,3 +50,9 @@ def test_sum_versions_with_actual_input(inp, sum_):
 )
 def test_eval_transmission(inp, value):
     assert value == eval_transmission(inp)
+
+
+def test_main(capsys):
+    main()
+    captured = capsys.readouterr()
+    assert captured.out == "843\n5390807940351\n"

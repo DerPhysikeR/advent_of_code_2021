@@ -128,15 +128,17 @@ def evalp(packet):
         return 1 if evalp(packet[-1][0]) == evalp(packet[-1][1]) else 0
 
 
-
 def eval_transmission(transmission):
     tree = list(read_bits(to_bin(transmission)))[0]
-    print(tree)
     return evalp(tree)
 
 
-if __name__ == "__main__":
+def main():
     puzzle_input = read_puzzle_input("input.txt")
     packet_tree = list(read_bits(to_bin(puzzle_input)))
     print(sum_versions(packet_tree))
     print(evalp(packet_tree[0]))
+
+
+if __name__ == "__main__":
+    main()
