@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Iterator, NamedTuple, Iterable
 from more_itertools import take
+from math import prod
 
 
 HEX_TO_BIN = {
@@ -108,6 +109,34 @@ def sum_versions(packets):
     return sum_
 
 
+def evalp(packet):
+    if packet[1] == 4:
+        return packet[-1]
+    if packet[1] == 0:
+        return sum(evalp(p) for p in packet[-1])
+    if packet[1] == 1:
+        return prod(evalp(p) for p in packet[-1])
+    if packet[1] == 2:
+        return min(evalp(p) for p in packet[-1])
+    if packet[1] == 3:
+        return max(evalp(p) for p in packet[-1])
+    if packet[1] == 5:
+        return 1 if evalp(packet[-1][0]) > evalp(packet[-1][1]) else 0
+    if packet[1] == 6:
+        return 1 if evalp(packet[-1][0]) < evalp(packet[-1][1]) else 0
+    if packet[1] == 7:
+        return 1 if evalp(packet[-1][0]) == evalp(packet[-1][1]) else 0
+
+
+
+def eval_transmission(transmission):
+    tree = list(read_bits(to_bin(transmission)))[0]
+    print(tree)
+    return evalp(tree)
+
+
 if __name__ == "__main__":
     puzzle_input = read_puzzle_input("input.txt")
-    print(sum_versions(read_bits(to_bin(puzzle_input))))
+    packet_tree = list(read_bits(to_bin(puzzle_input)))
+    print(sum_versions(packet_tree))
+    print(evalp(packet_tree[0]))
