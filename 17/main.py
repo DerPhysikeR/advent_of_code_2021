@@ -99,14 +99,22 @@ def canvas(target_area: TargetArea, probe: Optional[Probe]):
     return "\n".join("".join(row) for row in canv)
 
 
+def find_hitting_probes(target_area):
+    for vy in range(-124, 123 + 1):
+        for vx in range(21, 232 + 1):
+            if (probe := Probe(Vector(0, 0), Vector(vx, vy))).hits(target_area):
+                yield probe
+
+
 if __name__ == "__main__":
     INPUT = "target area: x=211..232, y=-124..-69"
     target_area: TargetArea = TargetArea.from_input(INPUT)
 
-    # print(canvas(target_area, Probe(Vector(0, 0), Vector(21, 300))))
+    # print(canvas(target_area, Probe(Vector(0, 0), Vector(21, 60))))
 
     # for vy in count(100):
     #     if Probe(Vector(0, 0), Vector(21, vy)).hits(target_area):
     #         print(vy)
 
     print(Probe(Vector(0, 0), Vector(21, 123)).maxy())
+    print(sum(1 for _ in find_hitting_probes(target_area)))
