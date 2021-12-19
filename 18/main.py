@@ -159,3 +159,4 @@ def read_puzzle_input(filename: str) -> list[list[int]]:
 if __name__ == "__main__":
     inp = read_puzzle_input("input.txt")
     print(sum_sfn(inp).magnitude())
+    print(max((SFN(a) + SFN(b)).magnitude() for a in inp for b in inp))
