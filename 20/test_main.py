@@ -35,6 +35,10 @@ def test_count_light_pixels_after_enhancements(puzzle_input):
     assert 35 == count_light_pixels_after_enhancements(*puzzle_input, 2)
 
 
+def test_count_light_pixels_after_many_enhancements(puzzle_input):
+    assert 3351 == count_light_pixels_after_enhancements(*puzzle_input, 50)
+
+
 def test_image__str__(puzzle_input):
     image = puzzle_input[0]
     assert str(image) == IMAGE

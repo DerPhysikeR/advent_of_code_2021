@@ -123,3 +123,4 @@ if __name__ == "__main__":
     algo: Algo
     image, algo = read_puzzle_input("input.txt")
     print(count_light_pixels_after_enhancements(image, algo, 2))
+    print(count_light_pixels_after_enhancements(image, algo, 50))
