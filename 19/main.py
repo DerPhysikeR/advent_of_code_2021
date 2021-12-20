@@ -4,13 +4,13 @@ from math import sqrt
 from parse import parse
 from itertools import takewhile
 from operator import itemgetter
-from enum import Enum
+from enum import Enum, auto
 
 
 class Axis(Enum):
-    x = 0
-    y = 1
-    z = 2
+    x = auto()
+    y = auto()
+    z = auto()
 
 
 class Point(NamedTuple):
@@ -24,9 +24,7 @@ class Point(NamedTuple):
         )
 
     def manhatten(self, other: Point) -> int:
-        return (
-            abs(self.x - other.x) + abs(self.y - other.y) + abs(self.z - other.z)
-        )
+        return abs(self.x - other.x) + abs(self.y - other.y) + abs(self.z - other.z)
 
     def __add__(self, other: Point) -> Point:
         return Point(self.x + other.x, self.y + other.y, self.z + other.z)
@@ -59,8 +57,8 @@ class Cube:
         min_point: Point = MIN_POINT,
         max_point: Point = MAX_POINT,
     ):
-        self.min_point = min_point
-        self.max_point = max_point
+        self.min_point: Point = min_point
+        self.max_point: Point = max_point
         self.beacons: list[Point] = [b for b in beacons if b in self]
 
     @property
@@ -73,22 +71,24 @@ class Cube:
             distances.append(set(pa.distance(pb) for pb in self.beacons))
         return distances
 
-    def calc_intersect_min_max(self, other: Cube):
-        minx = max(self.min_point.x, other.min_point.x)
-        miny = max(self.min_point.y, other.min_point.y)
-        minz = max(self.min_point.z, other.min_point.z)
-        maxx = min(self.max_point.x, other.max_point.x)
-        maxy = min(self.max_point.y, other.max_point.y)
-        maxz = min(self.max_point.z, other.max_point.z)
+    def calc_intersect_min_max(self, other: Cube) -> tuple[Point, Point]:
+        minx: int = max(self.min_point.x, other.min_point.x)
+        miny: int = max(self.min_point.y, other.min_point.y)
+        minz: int = max(self.min_point.z, other.min_point.z)
+        maxx: int = min(self.max_point.x, other.max_point.x)
+        maxy: int = min(self.max_point.y, other.max_point.y)
+        maxz: int = min(self.max_point.z, other.max_point.z)
         return Point(minx, miny, minz), Point(maxx, maxy, maxz)
 
-    def count_equal_beacons(self, other: Cube):
+    def count_equal_beacons(self, other: Cube) -> int:
         return len(set(self.beacons).intersection(set(other.beacons)))
 
-    def fits(self, other: Cube):
+    def fits(self, other: Cube) -> bool:
+        min_point: Point
+        max_point: Point
         min_point, max_point = self.calc_intersect_min_max(other)
-        cube = Cube(self.beacons, min_point, max_point)
-        other_cube = Cube(other.beacons, min_point, max_point)
+        cube: Cube = Cube(self.beacons, min_point, max_point)
+        other_cube: Cube = Cube(other.beacons, min_point, max_point)
         return set(cube.beacons) == set(other_cube.beacons)
 
     def __contains__(self, beacon: Point) -> bool:
@@ -98,14 +98,14 @@ class Cube:
             and (self.min_point.z <= beacon.z <= self.max_point.z)
         )
 
-    def similarity(self, other: Cube):
-        similarities = []
+    def similarity(self, other: Cube) -> list[tuple[tuple[int, int], int]]:
+        similarities: list[tuple[tuple[int, int], int]] = []
         for i, sd in enumerate(self.calc_distances()):
             for j, od in enumerate(other.calc_distances()):
                 similarities.append(((i, j), len(sd.intersection(od))))
         return sorted(similarities, key=itemgetter(1), reverse=True)
 
-    def rotate(self, axis: Axis):
+    def rotate(self, axis: Axis) -> Cube:
         if not (self.min_point == -self.max_point):
             raise ValueError("Only real cubes centered at zero can be rotated")
         return Cube(
@@ -141,8 +141,12 @@ class Cube:
         for _ in range(3):
             yield (cube := cube.rotate(Axis.z))
 
-    def __repr__(self):
-        return f"Cube(beacons={self.beacons}, min_point={self.min_point}, max_point{self.max_point})"
+    def __repr__(self) -> str:
+        return (
+            f"Cube(beacons={self.beacons}"
+            f", min_point={self.min_point}"
+            f", max_point{self.max_point})"
+        )
 
 
 def read_puzzle_input(filename: str) -> list[list[Point]]:
@@ -155,23 +159,22 @@ def read_puzzle_input(filename: str) -> list[list[Point]]:
     return points
 
 
-def assemble_map(cubes: list[Cube]):
-    map = [cubes[0]]
-    found = [0]
+def assemble_map(cubes: list[Cube]) -> list[Cube]:
+    map: list[Cube] = [cubes[0]]
+    found: list[int] = [0]
     for ri, root_cube in enumerate(map):
         print(f"check Cube {found[ri]}:")
         for ci, cube in enumerate(cubes):
             if ci in found:
                 continue
             print(f"... Cube {ci}")
-            similarities = root_cube.similarity(cube)
+            similarities: list[tuple[tuple[int, int], int]] = root_cube.similarity(cube)
             for (bid, obid), s in takewhile(lambda x: x[1] >= 12, similarities):
-                # for (bid, obid), s in similarities:
                 print(s)
-                abort = False
+                abort: bool = False
                 for c in cube.orientations():
-                    ref_beacon = root_cube.beacons[bid]
-                    moved_cube = c.move(ref_beacon - c.beacons[obid])
+                    ref_beacon: Point = root_cube.beacons[bid]
+                    moved_cube: Cube = c.move(ref_beacon - c.beacons[obid])
                     print(
                         f"fitting beacons: {root_cube.count_equal_beacons(moved_cube)}"
                     )
@@ -179,12 +182,9 @@ def assemble_map(cubes: list[Cube]):
                         root_cube.fits(moved_cube)
                         and root_cube.count_equal_beacons(moved_cube) >= 12
                     ):
-                        # if root_cube.count_equal_beacons(moved_cube) >= 12:
                         map.append(moved_cube)
                         found.append(ci)
-                        print(
-                            f"found fit with {ci}, scanner @ {moved_cube.min_point + MAX_POINT}"
-                        )
+                        print(f"found fit with {ci}, scanner @ {moved_cube.scanner}")
                         abort = True
                         break
                 if abort:
