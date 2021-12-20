@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterator, NamedTuple, Optional, Iterable
+from typing import Iterator, NamedTuple
 from enum import Enum
 from itertools import product
 
@@ -13,8 +13,8 @@ class Point(NamedTuple):
     row: int
     col: int
 
-    def neighbors(self):
-        d = (-1, 0, 1)
+    def neighbors(self) -> Iterator[Point]:
+        d: tuple[int, int, int] = (-1, 0, 1)
         for dr, dc in product(d, d):
             yield Point(self.row + dr, self.col + dc)
 
@@ -26,13 +26,10 @@ class Algo:
     def __init__(self, light_pixels: set[int]):
         self.light_pixels = light_pixels
 
-    def convert_to_int(self, index: Index):
-        return int("".join("1" if c == Color.light else "0" for c in index), 2)
-
-    def by_color(self, index: Index):
+    def by_color(self, index: Index) -> Color:
         return self[int("".join("1" if c == Color.light else "0" for c in index), 2)]
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> Color:
         if not (0 <= index <= 511):
             raise IndexError("Algo index out of range")
         return Color.light if index in self.light_pixels else Color.dark
@@ -48,27 +45,29 @@ class Image:
         self.background: Color = background
 
     @property
-    def foreground(self):
+    def foreground(self) -> Color:
         return Color.light if self.background == Color.dark else Color.dark
 
     def enhance(self, algo: Algo) -> Image:
-        new_background = algo[0] if self.background == Color.dark else algo[511]
+        new_background: Color = algo[0] if self.background == Color.dark else algo[511]
         new_pixels: set[Point] = set()
+        min_point: Point
+        max_point: Point
         min_point, max_point = self.find_min_max()
         for ri in range(min_point.row - 1, max_point.row + 2):
             for ci in range(min_point.col - 1, max_point.col + 2):
-                point = Point(ri, ci)
-                index = tuple(self[p] for p in point.neighbors())
-                color = algo.by_color(index)
+                point: Point = Point(ri, ci)
+                index: Index = tuple(self[p] for p in point.neighbors())
+                color: Color = algo.by_color(index)
                 if color != new_background:
                     new_pixels.add(point)
         return Image(new_pixels, new_background)
 
     def find_min_max(self) -> tuple[Point, Point]:
-        minrow = min(p.row for p in self.pixels)
-        maxrow = max(p.row for p in self.pixels)
-        mincol = min(p.col for p in self.pixels)
-        maxcol = max(p.col for p in self.pixels)
+        minrow: int = min(p.row for p in self.pixels)
+        maxrow: int = max(p.row for p in self.pixels)
+        mincol: int = min(p.col for p in self.pixels)
+        maxcol: int = max(p.col for p in self.pixels)
         return Point(minrow, mincol), Point(maxrow, maxcol)
 
     def __str__(self) -> str:
@@ -95,10 +94,10 @@ class Image:
                     pixels.add(Point(ri, ci))
         return cls(pixels, background)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.pixels)
 
-    def __getitem__(self, point: Point):
+    def __getitem__(self, point: Point) -> Color:
         return self.foreground if point in self.pixels else self.background
 
 
@@ -112,9 +111,9 @@ def count_light_pixels_after_enhancements(
 
 def read_puzzle_input(filename: str) -> tuple[Image, Algo]:
     with open(filename) as stream:
-        algo = Algo.from_string(stream.readline().strip())
+        algo: Algo = Algo.from_string(stream.readline().strip())
         stream.readline()
-        image = Image.from_string(stream.read().strip(), Color.dark)
+        image: Image = Image.from_string(stream.read().strip(), Color.dark)
     return image, algo
 
 
