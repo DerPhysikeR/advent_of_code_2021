@@ -5,9 +5,7 @@ from main import (
     Cube,
     read_puzzle_input,
     assemble_map,
-    # SFN,
-    # sum_sfn,
-    # read_puzzle_input,
+    max_manhatten_distance,
 )
 
 
@@ -39,3 +37,8 @@ def test_assemble_map(puzzle_input, puzzle_output):
     assert 12 == len(set(map[0].beacons).intersection(set(map[1].beacons)))
     beacons = set().union(*[set(c.beacons) for c in map])
     assert beacons == set(puzzle_output)
+
+
+def test_max_manhatten_distances(puzzle_input):
+    map = assemble_map([Cube(beacons=c) for c in puzzle_input])
+    assert 3621 == max_manhatten_distance([c.scanner for c in map])

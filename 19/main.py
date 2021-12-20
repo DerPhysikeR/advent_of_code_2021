@@ -23,6 +23,11 @@ class Point(NamedTuple):
             (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2
         )
 
+    def manhatten(self, other: Point) -> int:
+        return (
+            abs(self.x - other.x) + abs(self.y - other.y) + abs(self.z - other.z)
+        )
+
     def __add__(self, other: Point) -> Point:
         return Point(self.x + other.x, self.y + other.y, self.z + other.z)
 
@@ -57,6 +62,10 @@ class Cube:
         self.min_point = min_point
         self.max_point = max_point
         self.beacons: list[Point] = [b for b in beacons if b in self]
+
+    @property
+    def scanner(self) -> Point:
+        return self.min_point + MAX_POINT
 
     def calc_distances(self) -> list[set[float]]:
         distances: list[set[float]] = []
@@ -157,13 +166,15 @@ def assemble_map(cubes: list[Cube]):
             print(f"... Cube {ci}")
             similarities = root_cube.similarity(cube)
             for (bid, obid), s in takewhile(lambda x: x[1] >= 12, similarities):
-            # for (bid, obid), s in similarities:
+                # for (bid, obid), s in similarities:
                 print(s)
                 abort = False
                 for c in cube.orientations():
                     ref_beacon = root_cube.beacons[bid]
                     moved_cube = c.move(ref_beacon - c.beacons[obid])
-                    print(f"fitting beacons: {root_cube.count_equal_beacons(moved_cube)}")
+                    print(
+                        f"fitting beacons: {root_cube.count_equal_beacons(moved_cube)}"
+                    )
                     if (
                         root_cube.fits(moved_cube)
                         and root_cube.count_equal_beacons(moved_cube) >= 12
@@ -182,9 +193,14 @@ def assemble_map(cubes: list[Cube]):
     return map
 
 
+def max_manhatten_distance(points: list[Point]) -> int:
+    return max(p1.manhatten(p2) for p1 in points for p2 in points)
+
+
 if __name__ == "__main__":
     inp = read_puzzle_input("input.txt")
     cubes: list[Cube] = [Cube(beacons=c) for c in inp]
     map: list[Cube] = assemble_map(cubes)
     beacons = set().union(*[set(c.beacons) for c in map])
     print(len(beacons))
+    print(max_manhatten_distance([c.scanner for c in map]))
