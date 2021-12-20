@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Iterator, NamedTuple
+from types import GenericAlias
+from typing import Iterator, NamedTuple, TypeVar
 from enum import Enum
 from itertools import product
 
@@ -19,7 +20,9 @@ class Point(NamedTuple):
             yield Point(self.row + dr, self.col + dc)
 
 
-Index = tuple[Color, Color, Color, Color, Color, Color, Color, Color, Color]
+T = TypeVar("T")
+NineTuple = GenericAlias(tuple, (T,) * 8)
+Index = NineTuple[Color]
 
 
 class Algo:
