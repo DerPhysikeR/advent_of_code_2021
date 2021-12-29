@@ -4,7 +4,7 @@ from main import (
     Player,
     Game,
     find_points_loser_times_dice_rolls,
-    calc_new_position,
+    DPlayer,
     find_winning_universe_counts,
 )
 
@@ -35,11 +35,12 @@ def test_find_points_loser_times_dice_rolls():
         (9, 3, 2),
     ],
 )
-def test_calc_new_position(position, throw, new_position):
-    assert new_position == calc_new_position(position, throw)
+def test_dplayer_calc_new_position(position, throw, new_position):
+    player = DPlayer(position, 0)
+    assert new_position == player.calc_new_position(throw)
 
 
 def test_find_winning_universe_counts():
-    p1_win_count, p2_win_count = find_winning_universe_counts([4, 8])
+    p1_win_count, p2_win_count = find_winning_universe_counts(4, 8)
     assert p1_win_count == 444356092776315
     assert p2_win_count == 341960390180808

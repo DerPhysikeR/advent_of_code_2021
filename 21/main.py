@@ -68,18 +68,21 @@ class DPlayer(NamedTuple):
     position: int
     points: int
 
+    def calc_new_position(self, throw: int) -> int:
+        return ((self.position - 1 + throw) % 10) + 1
+
 
 PDict = dict[DPlayer, int]
 
 
-def evolve(players: PDict):
+def evolve(players: PDict) -> PDict:
     new_players: defaultdict[DPlayer, int] = defaultdict(int)
-    for player, puni in players.items():
+    for player, player_universes in players.items():
         for throw, universes in THROW_UNIVERSES.items():
-            new_position = calc_new_position(player.position, throw)
-            new_points = player.points + new_position
-            new_player = DPlayer(new_position, new_points)
-            new_players[new_player] += puni * universes
+            new_position: int = player.calc_new_position(throw)
+            new_points: int = player.points + new_position
+            new_player: DPlayer = DPlayer(new_position, new_points)
+            new_players[new_player] += player_universes * universes
     return new_players
 
 
@@ -94,32 +97,26 @@ def separate_by_points(players: PDict) -> tuple[PDict, PDict]:
     return players_not_won, players_won
 
 
-def calc_new_position(position, throw):
-    return ((position - 1 + throw) % 10) + 1
+def find_winning_universe_counts(start1: int, start2: int) -> tuple[int, int]:
+    player1: DPlayer = DPlayer(start1, 0)
+    players1: PDict = {player1: 1}
 
+    player2: DPlayer = DPlayer(start2, 0)
+    players2: PDict = {player2: 1}
 
-def find_winning_universe_counts(starting_positions):
-    player1 = DPlayer(starting_positions[0], 0)
-    players1 = {player1: 1}
+    p1_won_universes: int = 0
+    p2_won_universes: int = 0
 
-    player2 = DPlayer(starting_positions[1], 0)
-    players2 = {player2: 1}
-
-    p1_won_universes = 0
-    p2_won_universes = 0
-
-    p1turn = True
+    p1turn: bool = True
     while players1 and players2:
         if p1turn:
-            players1 = evolve(players1)
-            players1, won = separate_by_points(players1)
+            players1, won = separate_by_points(evolve(players1))
             p1_won_universes += sum(
                 u1 * u2 for u1, u2 in product(won.values(), players2.values())
             )
             p1turn = False
         else:
-            players2 = evolve(players2)
-            players2, won = separate_by_points(players2)
+            players2, won = separate_by_points(evolve(players2))
             p2_won_universes += sum(
                 u1 * u2 for u1, u2 in product(players1.values(), won.values())
             )
@@ -129,4 +126,4 @@ def find_winning_universe_counts(starting_positions):
 
 if __name__ == "__main__":
     print(find_points_loser_times_dice_rolls((2, 8)))
-    print(find_winning_universe_counts((2, 8)))
+    print(find_winning_universe_counts(2, 8))
