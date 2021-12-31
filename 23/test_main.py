@@ -111,18 +111,6 @@ def test_state_pop_raises(state, idx, error):
         state.pop(*idx)
 
 
-# @pytest.mark.parametrize(
-#     "state, idx, result",
-#     [
-#         (State("A...........BCDABCD"), ("A", 0), (3, State("...........ABCDABCD"))),
-#         (State("A...........BCD.BCD"), ("A", 0), (4, State("............BCDABCD"))),
-#         (State("..........A.BCD.BCD"), ("A", 10), (10, State("............BCDABCD"))),
-#     ],
-# )
-# def test_state_push(state, idx, result):
-#     assert state.push(*idx) == result
-
-
 @pytest.mark.parametrize(
     "state, idx, error",
     [
