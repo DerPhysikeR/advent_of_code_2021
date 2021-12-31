@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import Iterator, NamedTuple
-from textwrap import dedent
+from typing import Iterator
+from itertools import product, zip_longest
 from queue import PriorityQueue
-from time import sleep
+from textwrap import dedent
 
 
 OUTPUT = dedent(
@@ -15,151 +15,234 @@ OUTPUT = dedent(
     """
 )
 
-
-class Move(NamedTuple):
-    start: int
-    end: int
+ADVANCED_OUTPUT = dedent(
+    """\
+    #############
+    #...........#
+    ###A#B#C#D###
+      #A#B#C#D#
+      #A#B#C#D#
+      #A#B#C#D#
+      #########
+    """
+)
 
 
 class State:
-    MAP_STR = "#############\n#{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #########\n"
-    NEIGHBORS = {
-        0: (1,),
-        1: (0, 2),
-        2: (1, 3, 11),
-        3: (2, 4),
-        4: (3, 5, 12),
-        5: (4, 6),
-        6: (5, 7, 13),
-        7: (6, 8),
-        8: (7, 9, 14),
-        9: (8, 10),
-        10: (9,),
-        11: (2, 15),
-        12: (4, 16),
-        13: (6, 17),
-        14: (8, 18),
-        15: (11,),
-        16: (12,),
-        17: (13,),
-        18: (14,),
-    }
     COST = {"A": 1, "B": 10, "C": 100, "D": 1000}
+    VALID_HALLWAY_IDXS = [0, 1, 3, 5, 7, 9, 10]
+    ROOMS_TOP_IDX = {"A": 11, "B": 12, "C": 13, "D": 14}
+    ENTRANCES = {k: v for k, v in zip("ABCD", range(2, 8 + 1, 2))}
+    AH = {
+        0: 3,
+        1: 2,
+        2: 1,
+        3: 2,
+        4: 3,
+        5: 4,
+        6: 5,
+        7: 6,
+        8: 7,
+        9: 8,
+        10: 9,
+        11: 0,
+        12: 4,
+        13: 6,
+        14: 8,
+        15: 0,
+        16: 5,
+        17: 7,
+        18: 9,
+        19: 0,
+        20: 6,
+        21: 8,
+        22: 10,
+        23: 0,
+        24: 7,
+        25: 9,
+        26: 11,
+    }
+    BH = {
+        0: 5,
+        1: 4,
+        2: 3,
+        3: 2,
+        4: 1,
+        5: 2,
+        6: 3,
+        7: 4,
+        8: 5,
+        9: 6,
+        10: 7,
+        11: 4,
+        12: 0,
+        13: 4,
+        14: 6,
+        15: 5,
+        16: 0,
+        17: 5,
+        18: 7,
+        19: 6,
+        20: 0,
+        21: 6,
+        22: 8,
+        23: 7,
+        24: 0,
+        25: 7,
+        26: 9,
+    }
+    CH = {
+        0: 7,
+        1: 6,
+        2: 5,
+        3: 4,
+        4: 3,
+        5: 2,
+        6: 1,
+        7: 2,
+        8: 3,
+        9: 4,
+        10: 5,
+        11: 6,
+        12: 4,
+        13: 0,
+        14: 4,
+        15: 7,
+        16: 5,
+        17: 0,
+        18: 5,
+        19: 8,
+        20: 6,
+        21: 0,
+        22: 6,
+        23: 9,
+        24: 7,
+        25: 0,
+        26: 7,
+    }
+    DH = {
+        0: 9,
+        1: 8,
+        2: 7,
+        3: 6,
+        4: 5,
+        5: 4,
+        6: 3,
+        7: 2,
+        8: 1,
+        9: 2,
+        10: 3,
+        11: 8,
+        12: 6,
+        13: 4,
+        14: 0,
+        15: 9,
+        16: 7,
+        17: 5,
+        18: 0,
+        19: 10,
+        20: 8,
+        21: 6,
+        22: 0,
+        23: 11,
+        24: 9,
+        25: 7,
+        26: 0,
+    }
+    HEURISTIC = {"A": AH, "B": BH, "C": CH, "D": DH}
 
-    def __init__(self, state: str, last_moved: int = -1):
+    def __init__(self, state: str):
         self.state = state
-        self.last_moved = last_moved
+
+    def next(self) -> Iterator[tuple[int, State]]:
+        iterables = ((self.pop, self.push), self.VALID_HALLWAY_IDXS, self.ROOMS_TOP_IDX)
+        for p, hallway_idx, room_idx in product(*iterables):
+            try:
+                next_state = p(room_idx, hallway_idx)
+            except:
+                continue
+            yield next_state
+
+    def distance(self, from_idx: int, to_idx: int) -> int:
+        hallway_idx = min(from_idx, to_idx)
+        room_idx = max(from_idx, to_idx)
+        assert hallway_idx <= 10
+        assert room_idx >= 11
+        room_entry_idx = (((room_idx - 11) % 4) + 1) * 2
+        depth: int = ((room_idx - 11) // 4) + 1
+        return abs(hallway_idx - room_entry_idx) + depth
+
+    def _validate_column_and_hallway_idx(self, column: str, idx: int):
+        if not idx in self.VALID_HALLWAY_IDXS:
+            raise ValueError(f"Index {idx} is not a valid position in the hallway")
+        col_idx = self.ENTRANCES[column]
+        for i in range(min(col_idx, idx) + 1, max(col_idx, idx)):
+            if self[i] != ".":
+                raise ValueError(f"Way is blocked by '{self[i]}' in position {i}")
+
+    def _move(self, from_idx: int, to_idx) -> tuple[int, State]:
+        if self[to_idx] != ".":
+            raise ValueError(f"Position {to_idx} is already occupied")
+        amphipod = self[from_idx]
+        cost = self.distance(from_idx, to_idx) * self.COST[amphipod]
+        new_state = list(self.state)
+        new_state[from_idx], new_state[to_idx] = new_state[to_idx], new_state[from_idx]
+        return cost, State("".join(new_state))
+
+    def pop(self, room_idx: str, hallway_idx: int) -> tuple[int, State]:
+        self._validate_column_and_hallway_idx(room_idx, hallway_idx)
+        for i in range(self.ROOMS_TOP_IDX[room_idx], len(self.state), 4):
+            if self[i] != ".":
+                return self._move(i, hallway_idx)
+        else:
+            raise ValueError(f"Room '{room_idx}' is empty")
+
+    def push(self, room_idx: str, hallway_idx: int) -> tuple[int, State]:
+        self._validate_column_and_hallway_idx(room_idx, hallway_idx)
+        room_top_idx = self.ROOMS_TOP_IDX[room_idx]
+        if self[room_top_idx] != ".":
+            raise ValueError(f"Room '{room_idx}' is already full")
+        if room_idx != self[hallway_idx]:
+            raise ValueError(f"Can't push 'self[hallway_idx]' into room '{room_idx}'")
+        if not set(self[room_top_idx::4]).issubset(set(f".{room_idx}")):
+            raise ValueError(f"Can't push 'self[hallway_idx]' into room '{room_idx}'")
+        previous_idx = room_top_idx
+        for i in range(room_top_idx, len(self.state), 4):
+            if self[i] != ".":
+                break
+            previous_idx = i
+        return self._move(hallway_idx, previous_idx)
 
     def letters(self) -> Iterator[tuple[int, str]]:
         for i, letter in enumerate(self.state):
             if letter in self.COST:
                 yield i, letter
 
-    def is_free(self, idx):
-        return self.state[idx] == "."
-
-    def moves(self) -> Iterator[tuple[int, int]]:
-        for idx, _ in self.letters():
-            for neighbor in self.NEIGHBORS[idx]:
-                if self.is_free(neighbor):
-                    yield idx, neighbor
-
-    def in_hallway(self, idx: int) -> bool:
-        return 0 <= idx <= 10
-
-    def free_way(self, start: int, end: int) -> bool:
-        if not self.in_hallway(start):
-            raise ValueError("Index {start} not in hallway")
-        if not self.is_free(end):
-            return False
-        spot_before_room = {11: 2, 12: 4, 13: 6, 14: 8}[end]
-        mi = min(spot_before_room, start)
-        ma = max(spot_before_room, start)
-        for i in range(mi, ma + 1):
-            if i == start:
-                continue
-            if self[i] != ".":
-                return False
-        else:
-            return True
-
-    def can_move_in_room(self, idx: int):
-        amphipod = self[idx]
-        if amphipod == "A":
-            return self.free_way(idx, 11)
-        if amphipod == "B":
-            return self.free_way(idx, 12)
-        if amphipod == "C":
-            return self.free_way(idx, 13)
-        if amphipod == "D":
-            return self.free_way(idx, 14)
-        return False
-
-    def complex_next(self) -> Iterator[tuple[int, State]]:
-        for start, end in self.moves():
-            cost, state = self.move(start, end)
-            amphipod = self[start]
-
-            if self.in_hallway(start) and start != self.last_moved:
-                if not self.can_move_in_room(start):
-                    continue
-
-            # don't stop directly outside room
-            if self[2] != "." and start != 2:
-                continue
-            if self[4] != "." and start != 4:
-                continue
-            if self[6] != "." and start != 6:
-                continue
-            if self[8] != "." and start != 8:
-                continue
-
-            # only move in correct room
-            if start == 2 and end == 11:
-                if (amphipod != "A") or (self[15] not in ".A"):
-                    continue
-            if start == 4 and end == 12:
-                if (amphipod != "B") or (self[16] not in ".B"):
-                    continue
-            if start == 6 and end == 13:
-                if (amphipod != "C") or (self[17] not in ".C"):
-                    continue
-            if start == 8 and end == 14:
-                if (amphipod != "D") or (self[18] not in ".D"):
-                    continue
-
-            # don't move out of correct room
-            if start == 11 and end == 2:
-                if (amphipod == "A") and (self[15] in ".A"):
-                    continue
-            if start == 12 and end == 4:
-                if (amphipod == "B") and (self[16] in ".B"):
-                    continue
-            if start == 13 and end == 6:
-                if (amphipod == "C") and (self[17] in ".C"):
-                    continue
-            if start == 14 and end == 8:
-                if (amphipod == "D") and (self[18] in ".D"):
-                    continue
-
-            yield cost, state
-
-    def move(self, start, end) -> tuple[int, State]:
-        l: list[str] = list(self.state)
-        l[start], l[end] = l[end], l[start]
-        return self.COST[self[start]], State("".join(l), end)
+    def heuristic(self) -> int:
+        h = 0
+        for i, letter in self.letters():
+            h += self.HEURISTIC[letter][i] * self.COST[letter]
+        return h
 
     def __getitem__(self, idx):
         return self.state[idx]
 
     def __repr__(self):
-        return f"State({self.state})"
+        return f"{self.__class__.__name__}({self.state})"
 
     def __str__(self) -> str:
-        return self.MAP_STR.format(self.state[:11], *list(self.state[11:]))
+        rows = [
+            "#############",
+            f"#{self.state[:11]}#",
+            "###{}#{}#{}#{}###".format(*self.state[11:15]),
+        ]
+        for items in grouper(self.state[15:], 4):
+            rows.append("  #{}#{}#{}#{}#".format(*items))
+        rows.append("  #########\n")
+        return "\n".join(rows)
 
     def __hash__(self) -> int:
-        return hash((self.state, self.last_moved))
+        return hash(self.state)
 
     def __lt__(self, other) -> bool:
         return hash(self) < hash(other)
@@ -172,25 +255,54 @@ class State:
         return cls(map.replace("\n", "").replace(" ", "").replace("#", ""))
 
 
+def grouper(iterable, n):
+    args = [iter(iterable)] * n
+    return zip_longest(*args)
+
+
 def find_path(start: State, end: State):
+    explored: set[State] = set()
     pq: PriorityQueue[tuple[int, State]] = PriorityQueue()
-    explored: set[State] = set([start])
     pq.put((0, start))
+    previous_state: dict[State, State] = {}
+    cost_to_reach: dict[State, int] = {start: 0}
     while not pq.empty():
-        cost, state = pq.get()
-        print(state)
-        # sleep(0.5)
+        priority, state = pq.get()
         if state == end:
-            return cost
-        for c, s in state.complex_next():
-            if s not in explored:
-                explored.add(s)
-                pq.put((cost + c, s))
+            print_moves(end, previous_state, cost_to_reach)
+            return cost_to_reach[state]
+        if state in explored:
+            continue
+        explored.add(state)
+        for c, s in state.next():
+            cost_c = cost_to_reach[state] + c
+            priority = cost_c + s.heuristic()
+            if s not in cost_to_reach:
+                cost_to_reach[s] = cost_c
+                pq.put((priority, s))
+                previous_state[s] = state
+            elif cost_c < cost_to_reach[s]:
+                cost_to_reach[s] = cost_c
+                pq.put((priority, s))
+                previous_state[s] = state
 
 
-def sort_amphipods(map: str):
-    start = State.from_map(map)
-    end = State.from_map(OUTPUT)
+def print_moves(
+    end: State, previous: dict[State, State], cost_to_reach: dict[State, int]
+):
+    moves = [end]
+    s = end
+    while True:
+        try:
+            moves.append(s := previous[s])
+        except KeyError:
+            break
+    for s in reversed(moves):
+        print(cost_to_reach[s])
+        print(s)
+
+
+def sort_amphipods(start: State, end: State):
     return find_path(start, end)
 
 
@@ -204,4 +316,22 @@ if __name__ == "__main__":
           #########
         """
     )
-    print(sort_amphipods(INPUT))
+    print(sort_amphipods(State.from_map(INPUT), State.from_map(OUTPUT)))
+
+    ADVANCED_INPUT = dedent(
+        """\
+        #############
+        #...........#
+        ###C#A#B#D###
+          #D#C#B#A#
+          #D#B#A#C#
+          #D#C#A#B#
+          #########
+        """
+    )
+    print(
+        sort_amphipods(
+            State.from_map(ADVANCED_INPUT),
+            State.from_map(ADVANCED_OUTPUT),
+        )
+    )
