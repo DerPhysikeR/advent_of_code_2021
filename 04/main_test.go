@@ -24,15 +24,15 @@ func TestFindFirstWinningGameScore(t *testing.T) {
 }
 
 func TestBingoGame(t *testing.T) {
-
-	t.Run("Test callNumber", func(t *testing.T) {
-		bingoBoard := BingoBoard{[5][5]int{
+    var bingoBoard = BingoBoard{[5][5]int{
 			{1, 2, 3, 4, 5},
 			{6, 7, 8, 9, 10},
 			{11, 12, 13, 14, 15},
 			{16, 17, 18, 19, 20},
 			{21, 22, 23, 24, 25},
 		}}
+
+	t.Run("Test callNumber", func(t *testing.T) {
 		bingoGame := BingoGame{bingoBoard, []int{}}
 		bingoGame.callNumber(0)
 		bingoGame.callNumber(1)
@@ -42,13 +42,6 @@ func TestBingoGame(t *testing.T) {
 	})
 
 	t.Run("Test if board wins by row", func(t *testing.T) {
-		bingoBoard := BingoBoard{[5][5]int{
-			{1, 2, 3, 4, 5},
-			{6, 7, 8, 9, 10},
-			{11, 12, 13, 14, 15},
-			{16, 17, 18, 19, 20},
-			{21, 22, 23, 24, 25},
-		}}
 		numbers := []int{1, 2, 3, 4, 5}
 		bingoGame := BingoGame{bingoBoard, numbers}
 		if !bingoGame.hasWon() {
@@ -57,13 +50,6 @@ func TestBingoGame(t *testing.T) {
 	})
 
 	t.Run("Test if board wins by column", func(t *testing.T) {
-		bingoBoard := BingoBoard{[5][5]int{
-			{1, 2, 3, 4, 5},
-			{6, 7, 8, 9, 10},
-			{11, 12, 13, 14, 15},
-			{16, 17, 18, 19, 20},
-			{21, 22, 23, 24, 25},
-		}}
 		numbers := []int{1, 6, 11, 16, 21}
 		bingoGame := BingoGame{bingoBoard, numbers}
 		if !bingoGame.hasWon() {
@@ -72,13 +58,6 @@ func TestBingoGame(t *testing.T) {
 	})
 
 	t.Run("Test board score", func(t *testing.T) {
-		bingoBoard := BingoBoard{[5][5]int{
-			{1, 2, 3, 4, 5},
-			{6, 7, 8, 9, 10},
-			{11, 12, 13, 14, 15},
-			{16, 17, 18, 19, 20},
-			{21, 22, 23, 24, 25},
-		}}
 		numbers := []int{1, 2, 3, 4, 5}
 		bingoGame := BingoGame{bingoBoard, numbers}
 		got := bingoGame.score()
