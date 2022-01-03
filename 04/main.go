@@ -101,6 +101,32 @@ func findFirstWinningGameScore(bingoBoards *[]BingoBoard, numbersToCall *[]int) 
 	return 0, fmt.Errorf("No board won.")
 }
 
+func findLastWinningGameScore(bingoBoards *[]BingoBoard, numbersToCall *[]int) (int, error) {
+	bingoGames := []BingoGame{}
+	for _, bingoBoard := range *bingoBoards {
+		bingoGames = append(bingoGames, BingoGame{bingoBoard, []int{}})
+	}
+
+	var winningBingoGame *BingoGame
+	for _, number := range *numbersToCall {
+		filteredBingoGames := []BingoGame{}
+		for idx := range bingoGames {
+			bingoGames[idx].callNumber(number)
+			if !bingoGames[idx].hasWon() {
+				filteredBingoGames = append(filteredBingoGames, bingoGames[idx])
+			}
+		}
+		bingoGames = filteredBingoGames
+		if len(bingoGames) == 1 {
+			winningBingoGame = &bingoGames[0]
+		}
+		if len(bingoGames) == 0 {
+			return winningBingoGame.score() * number, nil
+		}
+	}
+	return 0, fmt.Errorf("No single board wins last.")
+}
+
 func parseNumbers(numberString string) (*[]int, error) {
 	numbers := []int{}
 	for _, numberString := range strings.Split(numberString, ",") {
@@ -156,9 +182,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	score, err := findFirstWinningGameScore(bingoBoards, numbers)
+
+	score1, err := findFirstWinningGameScore(bingoBoards, numbers)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("The score of the first winning board is: %v\n", score)
+	fmt.Printf("The score of the first winning board is: %v\n", score1)
+
+	score2, err := findLastWinningGameScore(bingoBoards, numbers)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("The score of the last winning board is: %v\n", score2)
 }

@@ -6,16 +6,31 @@ import (
 
 func TestFindFirstWinningGameScore(t *testing.T) {
 
+	numbers, bingoBoards, err := readPuzzleInput("test_input.txt")
+	if err != nil {
+		t.Fatal("Test input could not be read.")
+	}
+
 	t.Run("Calc result of part 1 with test input", func(t *testing.T) {
-		numbers, bingoBoards, err := readPuzzleInput("test_input.txt")
-		if err != nil {
-			t.Fatal("Test input could not be read.")
-		}
 		score, err := findFirstWinningGameScore(bingoBoards, numbers)
 		if err != nil {
 			t.Fatal("No winning board found")
 		}
 		want := 4512
+		if score != want {
+			t.Errorf("got %v want %v", score, want)
+		}
+	})
+
+	t.Run("Calc result of part 2 with test input", func(t *testing.T) {
+		if err != nil {
+			t.Fatal("Test input could not be read.")
+		}
+		score, err := findLastWinningGameScore(bingoBoards, numbers)
+		if err != nil {
+			t.Fatal("No last winning board found")
+		}
+		want := 1924
 		if score != want {
 			t.Errorf("got %v want %v", score, want)
 		}
