@@ -1,4 +1,3 @@
-use std::fmt;
 use std::fs;
 
 enum Direction {
@@ -12,20 +11,10 @@ struct Command {
     units: u32,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct Vector {
     distance: u32,
     depth: u32,
-}
-
-impl fmt::Display for Vector {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Vector(distance={}, depth={})",
-            self.distance, self.depth
-        )
-    }
 }
 
 fn parse_command(line: &str) -> Command {
@@ -84,13 +73,13 @@ fn main() {
     let puzzle_input = read_puzzle_input("../input.txt");
     let destination = follow_course(&puzzle_input);
     println!(
-        "{} => {}",
+        "{:?} => {}",
         destination,
         destination.distance * destination.depth
     );
     let destination = follow_course_correctly(&puzzle_input);
     println!(
-        "{} => {}",
+        "{:?} => {}",
         destination,
         destination.distance * destination.depth
     );
