@@ -67,15 +67,18 @@ fn find_last_winning_board_score(
     bingo_boards: &[BingoBoard],
 ) -> Option<u32> {
     let mut last_score = None;
+    let mut bingo_boards: Vec<&BingoBoard> = bingo_boards.iter().collect();
     for upper in 1..numbers_to_call.len() {
         let called_numbers = &numbers_to_call[..upper];
+        let mut bingo_boards_in_progress: Vec<&BingoBoard> = Vec::new();
         for bingo_board in bingo_boards {
-            if !bingo_board.has_won(&called_numbers[..upper - 1])
-                && bingo_board.has_won(called_numbers)
-            {
+            if bingo_board.has_won(called_numbers) {
                 last_score = Some(bingo_board.calc_score(called_numbers));
+            } else {
+                bingo_boards_in_progress.push(bingo_board);
             }
         }
+        bingo_boards = bingo_boards_in_progress;
     }
     last_score
 }
