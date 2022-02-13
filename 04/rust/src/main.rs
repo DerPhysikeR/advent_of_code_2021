@@ -3,7 +3,6 @@ use std::fs;
 #[derive(Debug)]
 struct BingoBoard {
     numbers: Vec<Vec<u32>>,
-    hit_numbers: Vec<u32>,
 }
 
 impl BingoBoard {
@@ -17,95 +16,68 @@ impl BingoBoard {
             }
         }
         assert!(board.iter().all(|v| v.len() == board.len()));
-        Self {
-            numbers: board,
-            hit_numbers: Vec::new(),
-        }
+        Self { numbers: board }
     }
 
-    fn contains(&self, number: u32) -> bool {
-        self.numbers.iter().any(|v| v.contains(&number))
-    }
-
-    fn call_number(&mut self, number: u32) {
-        if self.hit_numbers.contains(&number) || self.has_won() {
-            return;
-        };
-        if self.contains(number) {
-            self.hit_numbers.push(number);
-        }
-    }
-
-    fn check_rows_won(&self) -> bool {
+    fn check_rows_won(&self, called_numbers: &[u32]) -> bool {
         self.numbers
             .iter()
-            .any(|x| x.iter().all(|&y| self.hit_numbers.contains(&y)))
+            .any(|x| x.iter().all(|&y| called_numbers.contains(&y)))
     }
 
-    fn check_cols_won(&self) -> bool {
-        (0..self.numbers[0].len()).any(|i| {
-            self.numbers
-                .iter()
-                .all(|v| self.hit_numbers.contains(&v[i]))
-        })
+    fn check_cols_won(&self, called_numbers: &[u32]) -> bool {
+        (0..self.numbers[0].len())
+            .any(|i| self.numbers.iter().all(|v| called_numbers.contains(&v[i])))
     }
 
-    fn has_won(&self) -> bool {
-        self.check_rows_won() || self.check_cols_won()
+    fn has_won(&self, called_numbers: &[u32]) -> bool {
+        self.check_rows_won(called_numbers) || self.check_cols_won(called_numbers)
     }
 
-    fn calc_score(&self) -> u32 {
-        if !self.has_won() {
-            return 0;
-        }
-        let unmarked_sum: u32 = self
-            .numbers
+    fn sum_unmarked_numbers(&self, called_numbers: &[u32]) -> u32 {
+        self.numbers
             .iter()
             .flatten()
-            .filter(|x| !self.hit_numbers.contains(x))
-            .sum();
-        unmarked_sum * self.hit_numbers[self.hit_numbers.len() - 1]
+            .filter(|n| !called_numbers.contains(n))
+            .sum()
+    }
+
+    fn calc_score(&self, called_numbers: &[u32]) -> u32 {
+        self.sum_unmarked_numbers(called_numbers) * called_numbers[called_numbers.len() - 1]
     }
 }
 
-fn find_first_winning_board<'a>(
-    numbers_to_call: &Vec<u32>,
-    bingo_boards: &'a mut Vec<BingoBoard>,
-) -> Option<&'a BingoBoard> {
-    for number in numbers_to_call {
-        for i in 0..bingo_boards.len() {
-            bingo_boards[i].call_number(*number);
-            if bingo_boards[i].has_won() {
-                return Some(&bingo_boards[i]);
+fn find_first_winning_board_score(
+    numbers_to_call: &[u32],
+    bingo_boards: &[BingoBoard],
+) -> Option<u32> {
+    for upper in 1..numbers_to_call.len() {
+        let called_numbers = &numbers_to_call[..upper];
+        for bingo_board in bingo_boards {
+            if bingo_board.has_won(called_numbers) {
+                return Some(bingo_board.calc_score(called_numbers));
             }
         }
-        //     for bingo_board in bingo_boards {
-        //         bingo_board.call_number(*number);
-        //         if bingo_board.has_won() {
-        //             return Some(bingo_board);
-        //         };
-        //     }
     }
     None
 }
 
-fn find_last_winning_board<'a>(
-    numbers_to_call: &Vec<u32>,
-    bingo_boards: &'a mut Vec<BingoBoard>,
-) -> u32 {
-    // let boards_to_filter = bingo_boards.iter().collect();
-    // let mut bingo_boards: Vec<&BingoBoard> = bingo_boards.iter().filter(|bb| !bb.has_won()).collect();
-    let mut last_won_score = 0;
-    for number in numbers_to_call {
-        for i in 0..bingo_boards.len() {
-            if bingo_boards[i].has_won() {
-                continue;
+fn find_last_winning_board_score(
+    numbers_to_call: &[u32],
+    bingo_boards: &[BingoBoard],
+) -> Option<u32> {
+    let mut last_score = None;
+    for upper in 1..numbers_to_call.len() {
+        let called_numbers = &numbers_to_call[..upper];
+        for bingo_board in bingo_boards {
+            if !bingo_board.has_won(&called_numbers[..upper - 1])
+                && bingo_board.has_won(called_numbers)
+            {
+                last_score = Some(bingo_board.calc_score(called_numbers));
             }
-            bingo_boards[i].call_number(*number);
-            last_won_score = bingo_boards[i].calc_score();
         }
     }
-    last_won_score
+    last_score
 }
 
 fn read_puzzle_input(filename: &str) -> (Vec<u32>, Vec<BingoBoard>) {
@@ -121,10 +93,13 @@ fn read_puzzle_input(filename: &str) -> (Vec<u32>, Vec<BingoBoard>) {
 }
 
 fn main() {
-    let (numbers_to_call, mut bingo_boards) = read_puzzle_input("../input.txt");
-    let first_winning_board =
-        find_first_winning_board(&numbers_to_call, &mut bingo_boards).unwrap();
-    println!("{:?}", first_winning_board.calc_score());
-    let last_winning_score = find_last_winning_board(&numbers_to_call, &mut bingo_boards);
-    println!("{:?}", last_winning_score);
+    let (numbers_to_call, bingo_boards) = read_puzzle_input("../input.txt");
+    println!(
+        "{:?}",
+        find_first_winning_board_score(&numbers_to_call, &bingo_boards).unwrap()
+    );
+    println!(
+        "{:?}",
+        find_last_winning_board_score(&numbers_to_call, &bingo_boards).unwrap()
+    );
 }
