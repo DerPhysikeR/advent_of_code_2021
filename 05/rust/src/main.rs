@@ -86,7 +86,7 @@ fn get_delta(start: &i32, end: &i32) -> i32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Line, Point};
+    use crate::{count_overlapping_points, read_puzzle_input, Line, Point};
 
     #[test]
     fn line_iteration_in_x_and_y_directions() {
@@ -126,25 +126,28 @@ mod tests {
             assert!(i32::try_from(i).unwrap() == point.y);
         }
     }
+
+    #[test]
+    fn count_overlapping_points_for_orthogonal_lines_in_test_input() {
+        let puzzle_input = read_puzzle_input("../test_input.txt");
+        assert!(5 == count_overlapping_points(puzzle_input.iter().filter(|l| l.is_orthogonal())));
+    }
+
+    #[test]
+    fn count_overlapping_points_for_test_input() {
+        let puzzle_input = read_puzzle_input("../test_input.txt");
+        assert!(12 == count_overlapping_points(puzzle_input.iter()));
+    }
 }
 
-fn count_overlapping_points(lines: &[Line]) -> usize {
+fn count_overlapping_points<'a, I>(lines: I) -> usize
+where
+    I: Iterator<Item = &'a Line>,
+{
     let mut point_counter = HashMap::new();
     for line in lines {
         for point in line.into_iter() {
             *point_counter.entry(point).or_insert(0) += 1;
-        }
-    }
-    point_counter.iter().filter(|&(_, c)| *c >= 2).count()
-}
-
-fn count_overlapping_points_of_ortho_lines(lines: &[Line]) -> usize {
-    let mut point_counter = HashMap::new();
-    for line in lines {
-        if line.is_orthogonal() {
-            for point in line.into_iter() {
-                *point_counter.entry(point).or_insert(0) += 1;
-            }
         }
     }
     point_counter.iter().filter(|&(_, c)| *c >= 2).count()
@@ -161,6 +164,9 @@ fn read_puzzle_input(filepath: &str) -> Vec<Line> {
 
 fn main() {
     let puzzle_input = read_puzzle_input("../input.txt");
-    println!("{}", count_overlapping_points_of_ortho_lines(&puzzle_input));
-    println!("{}", count_overlapping_points(&puzzle_input));
+    println!(
+        "{}",
+        count_overlapping_points(puzzle_input.iter().filter(|l| l.is_orthogonal()))
+    );
+    println!("{}", count_overlapping_points(puzzle_input.iter()));
 }
