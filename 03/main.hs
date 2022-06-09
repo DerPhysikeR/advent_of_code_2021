@@ -10,10 +10,12 @@ toDecimal [] = 0
 toDecimal (O:bs) = toDecimal bs
 toDecimal (I:bs) = 2 ^ length bs + toDecimal bs
 
-invert :: [Bit] -> [Bit]
-invert [] = []
-invert (O:xs) = I : invert xs
-invert (I:xs) = O : invert xs
+invertBit :: Bit -> Bit
+invertBit O = I
+invertBit I = O
+
+invertBits :: [Bit] -> [Bit]
+invertBits = map invertBit
 
 count :: Eq a => a -> [a] -> Int
 count x = length . filter (==x)
@@ -25,18 +27,39 @@ mostCommonBit bits
     where ocount = count O bits
           icount = count I bits
 
+prefferedMostCommonBit :: [Bit] -> Bit -> Bit
+prefferedMostCommonBit bits preference
+    | ocount > icount = O
+    | ocount < icount = I
+    | otherwise = preference
+    where ocount = count O bits
+          icount = count I bits
+
 mostCommonBits :: [[Bit]] -> [Bit]
 mostCommonBits l@(x:xs)
     | null x = []
     | otherwise = mostCommonBit [head y | y <- l] : mostCommonBits [tail y | y <- l]
 
 getPowerConsumption :: [[Bit]] -> Int
-getPowerConsumption xs = toDecimal gr * toDecimal (invert gr)
+getPowerConsumption xs = toDecimal gr * toDecimal (invertBits gr)
     where gr = mostCommonBits xs
+
+getOxygenGeneratorRating :: [[Bit]] -> Int -> Int
+getOxygenGeneratorRating [x] _ = toDecimal x
+getOxygenGeneratorRating xs index = getOxygenGeneratorRating (filter (\y -> y!!index == mcb) xs) (index + 1)
+    where mcb = prefferedMostCommonBit [y!!index | y <- xs] I
+
+getCO2ScrubberRating :: [[Bit]] -> Int -> Int
+getCO2ScrubberRating [x] _ = toDecimal x
+getCO2ScrubberRating xs index = getCO2ScrubberRating (filter (\y -> y!!index == lcb) xs) (index + 1)
+    where lcb = invertBit (prefferedMostCommonBit [y!!index | y <- xs] I)
+
+getLifeSupportRating :: [[Bit]] -> Int
+getLifeSupportRating xs = getOxygenGeneratorRating xs 0 * getCO2ScrubberRating xs 0
 
 main :: IO ()
 main = do
     content <- readFile "input.txt"
     let numbers = map parseBinaryNumber (words content)
     print (getPowerConsumption numbers)
-
+    print (getLifeSupportRating numbers)
