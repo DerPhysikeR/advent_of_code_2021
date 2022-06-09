@@ -22,18 +22,8 @@ count x = length . filter (==x)
 
 mostCommonBit :: [Bit] -> Bit
 mostCommonBit bits
-    | ocount > icount = O
-    | ocount < icount = I
-    where ocount = count O bits
-          icount = count I bits
-
-prefferedMostCommonBit :: [Bit] -> Bit -> Bit
-prefferedMostCommonBit bits preference
-    | ocount > icount = O
-    | ocount < icount = I
-    | otherwise = preference
-    where ocount = count O bits
-          icount = count I bits
+    | count O bits > count I bits = O
+    | otherwise = I
 
 mostCommonBits :: [[Bit]] -> [Bit]
 mostCommonBits l@(x:xs)
@@ -47,12 +37,12 @@ getPowerConsumption xs = toDecimal gr * toDecimal (invertBits gr)
 getOxygenGeneratorRating :: [[Bit]] -> Int -> Int
 getOxygenGeneratorRating [x] _ = toDecimal x
 getOxygenGeneratorRating xs index = getOxygenGeneratorRating (filter (\y -> y!!index == mcb) xs) (index + 1)
-    where mcb = prefferedMostCommonBit [y!!index | y <- xs] I
+    where mcb = mostCommonBit [y!!index | y <- xs]
 
 getCO2ScrubberRating :: [[Bit]] -> Int -> Int
 getCO2ScrubberRating [x] _ = toDecimal x
 getCO2ScrubberRating xs index = getCO2ScrubberRating (filter (\y -> y!!index == lcb) xs) (index + 1)
-    where lcb = invertBit (prefferedMostCommonBit [y!!index | y <- xs] I)
+    where lcb = invertBit (mostCommonBit [y!!index | y <- xs])
 
 getLifeSupportRating :: [[Bit]] -> Int
 getLifeSupportRating xs = getOxygenGeneratorRating xs 0 * getCO2ScrubberRating xs 0
