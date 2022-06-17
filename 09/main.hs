@@ -1,34 +1,36 @@
-import Data.List.Extra (zip4)
+import Data.Maybe (catMaybes)
+import Data.Map (Map)
+import qualified Data.Map as M
 
-parseInput :: String -> [[Int]]
-parseInput string = map readLine (lines string)
+data Point = Point Int Int deriving (Show, Eq)
+
+instance Ord Point where
+    (Point x1 y1) `compare` (Point x2 y2)
+        | y1 == y2 = x1 `compare` x2
+        | otherwise = y1 `compare` y2
+
+enumerate = zip [0..]
+
+melt :: [[Int]] -> Map Point Int
+melt xs = M.fromList $ concat $ [[(Point i j, height) | (j, height) <- enumerate row] | (i, row) <- enumerate xs]
+
+parseInput :: String -> Map Point Int
+parseInput string = melt $ map readLine (lines string)
   where
     readLine = map (read . (: ""))
 
-getLeftNeihbors :: [Int] -> [[Int]]
-getLeftNeihbors xs = [] : [[x] | x <- init xs]
+getNeighbors :: Point -> [Point]
+getNeighbors (Point row col) = [Point (row - 1) col, Point (row + 1) col, Point row (col - 1), Point row (col + 1)]
 
-getRightNeighbors :: [Int] -> [[Int]]
-getRightNeighbors xs = [[x] | x <- tail xs] ++ [[]]
+getNeighborHeights :: Map Point Int -> Point -> [Int]
+getNeighborHeights heightMap point = catMaybes $ [M.lookup neighbor heightMap | neighbor <- getNeighbors point]
 
-transpose :: [[a]] -> [[a]]
-transpose ([]:_) = []
-transpose x = map head x : transpose (map tail x)
+getLowPoints :: Map Point Int -> [Point]
+getLowPoints heightMap = [point | (point, height) <- M.toList heightMap, all (>height) (getNeighborHeights heightMap point)]
 
-getNeighbors2D :: [[Int]] -> [[[Int]]]
-getNeighbors2D xs = [[ r ++ u ++ l ++ d | (r, u, l, d) <- zip4 hright hup hleft hdown] | (hright, hup, hleft, hdown) <- zip4 right up left down]
-    where left = map getLeftNeihbors xs
-          right = map getRightNeighbors xs
-          transposed = transpose xs
-          up = transpose $ map getLeftNeihbors transposed
-          down = transpose $ map getRightNeighbors transposed
-
-findLowPoints :: [[Int]] -> [Int]
-findLowPoints xs = [p | (p, n) <- zip (concat xs) (concat neighbors), all (>p) n]
-    where neighbors = getNeighbors2D xs
-
-getRiskLevel :: [[Int]] -> Int
-getRiskLevel = sum . map (+1) . findLowPoints
+getRiskLevel :: Map Point Int -> Int
+getRiskLevel heightMap = sum $ map (+1) lowHeights
+    where lowHeights = catMaybes [M.lookup lowPoint heightMap | lowPoint <- getLowPoints heightMap]
 
 main :: IO ()
 main = do
