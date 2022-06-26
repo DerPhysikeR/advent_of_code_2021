@@ -25,9 +25,6 @@ parseInput string = melt $ map readLine (lines string)
 getNeighbors :: Point -> [Point]
 getNeighbors (Point row col) = [Point (row - 1) col, Point (row + 1) col, Point row (col - 1), Point row (col + 1)]
 
-getExistingNeighbors ::  Point -> Map Point Int -> [Point]
-getExistingNeighbors point heightMap = filter (`M.member` heightMap) (getNeighbors point)
-
 getNeighborHeights :: Map Point Int -> Point -> [Int]
 getNeighborHeights heightMap point = catMaybes $ [M.lookup neighbor heightMap | neighbor <- getNeighbors point]
 
@@ -47,12 +44,12 @@ _getBasinAroundLowPoint heightMap basin (p:rest) checked
     where newChecked = S.insert p checked
           height = M.lookup p heightMap
           newBasin = S.insert p basin
-          neighbors = filter (`S.notMember` checked) (getExistingNeighbors p heightMap)
+          neighbors = filter (`S.notMember` checked) . filter (`M.member` heightMap) $ getNeighbors p
 
 getBasinAroundLowPoint :: Map Point Int -> Point -> Set Point
 getBasinAroundLowPoint heightMap lowPoint = _getBasinAroundLowPoint heightMap basin neighbors checked
     where lowPointSet = S.singleton lowPoint
-          neighbors = getExistingNeighbors lowPoint heightMap
+          neighbors = getNeighbors lowPoint
           basin = lowPointSet
           checked = lowPointSet
 
