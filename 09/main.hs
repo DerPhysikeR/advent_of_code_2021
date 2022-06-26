@@ -1,6 +1,9 @@
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, isNothing)
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Set (Set)
+import qualified Data.Set as S
+import Data.List (sort)
 
 data Point = Point Int Int deriving (Show, Eq)
 
@@ -22,6 +25,9 @@ parseInput string = melt $ map readLine (lines string)
 getNeighbors :: Point -> [Point]
 getNeighbors (Point row col) = [Point (row - 1) col, Point (row + 1) col, Point row (col - 1), Point row (col + 1)]
 
+getExistingNeighbors ::  Point -> Map Point Int -> [Point]
+getExistingNeighbors point heightMap = filter (`M.member` heightMap) (getNeighbors point)
+
 getNeighborHeights :: Map Point Int -> Point -> [Int]
 getNeighborHeights heightMap point = catMaybes $ [M.lookup neighbor heightMap | neighbor <- getNeighbors point]
 
@@ -32,8 +38,33 @@ getRiskLevel :: Map Point Int -> Int
 getRiskLevel heightMap = sum $ map (+1) lowHeights
     where lowHeights = catMaybes [M.lookup lowPoint heightMap | lowPoint <- getLowPoints heightMap]
 
+_getBasinAroundLowPoint :: Map Point Int -> Set Point -> [Point] -> Set Point -> Set Point
+_getBasinAroundLowPoint heightMap basin [] checked = basin
+_getBasinAroundLowPoint heightMap basin (p:rest) checked
+    | isNothing height = _getBasinAroundLowPoint heightMap basin rest newChecked
+    | height == Just 9 = _getBasinAroundLowPoint heightMap basin rest newChecked
+    | otherwise = _getBasinAroundLowPoint heightMap newBasin (rest ++ neighbors) newChecked
+    where newChecked = S.insert p checked
+          height = M.lookup p heightMap
+          newBasin = S.insert p basin
+          neighbors = filter (`S.notMember` checked) (getExistingNeighbors p heightMap)
+
+getBasinAroundLowPoint :: Map Point Int -> Point -> Set Point
+getBasinAroundLowPoint heightMap lowPoint = _getBasinAroundLowPoint heightMap basin neighbors checked
+    where lowPointSet = S.singleton lowPoint
+          neighbors = getExistingNeighbors lowPoint heightMap
+          basin = lowPointSet
+          checked = lowPointSet
+
+getBasins :: Map Point Int -> [Set Point]
+getBasins heightMap = map (getBasinAroundLowPoint heightMap) (getLowPoints heightMap)
+
+getProductOf3LargestBasins :: Map Point Int -> Int
+getProductOf3LargestBasins = product . take 3 . reverse . sort . map length . getBasins
+
 main :: IO ()
 main = do
     content <- readFile "input.txt"
     let heightMap = parseInput content
     print (getRiskLevel heightMap)
+    print (getProductOf3LargestBasins heightMap)
