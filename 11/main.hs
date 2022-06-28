@@ -13,7 +13,7 @@ instance Ord Point where
 
 enumerate :: [a] -> [(Int, a)]
 enumerate = zip [0..]
-    --
+
 parseInput :: String -> Map Point Int
 parseInput string = toMap [[(Point row col, digitToInt letter) | (col, letter) <- enumerate line] | (row, line) <- enumerate lines']
     where lines' = lines string
