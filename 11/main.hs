@@ -50,3 +50,4 @@ main :: IO ()
 main = do
     octopi <- readInput "input.txt"
     print (sum . take 101 $ [countFlashed m | m <- iterate evolve octopi])
+    print (length $ takeWhile (\m -> countFlashed m < length m) (iterate evolve octopi))
