@@ -2,6 +2,8 @@ import Data.Char (isLower)
 import Data.List.Split (splitOn)
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Maybe (catMaybes)
 
 parseLine :: String -> (String, String)
@@ -18,21 +20,40 @@ parseInput fileContent = foldr (\(start, end) acc -> M.insertWith (++) start [en
 isSmallCave :: String -> Bool
 isSmallCave = all isLower
 
-_findPaths :: Map String [String] -> [String] -> String -> [Maybe [String]]
-_findPaths m path location
+twiceVisited :: String -> [String] -> Bool
+twiceVisited = elem
+
+cantVisitSmallCaveTwice :: String -> [String] -> Bool
+cantVisitSmallCaveTwice location path = isSmallCave location && twiceVisited location path
+
+cantVisitMoreThanOneSmallCaveTwice :: String -> [String] -> Bool
+cantVisitMoreThanOneSmallCaveTwice "end" [] = False
+cantVisitMoreThanOneSmallCaveTwice "end" _ = True
+cantVisitMoreThanOneSmallCaveTwice location path
+    | not isSmall = False
+    | allUnique = False
+    | location `notElem` path = False
+    | otherwise = True
+    where isSmall = isSmallCave location
+          smallCaves = filter (all isLower) path
+          allUnique = length smallCaves == length (S.fromList smallCaves)
+
+_findPaths :: Map String [String] -> (String -> [String] -> Bool) -> [String] -> String -> [Maybe [String]]
+_findPaths m cantVisit path location
     | location == "start" = [Just currentPath]
-    | isSmallCave location && location `elem` path = [Nothing]
-    | otherwise = concatMap (_findPaths m currentPath) availableCaves
+    | cantVisit location path = [Nothing]
+    | otherwise = concatMap (_findPaths m cantVisit currentPath) availableCaves
     where availableCaves = M.findWithDefault [] location m
           currentPath = location : path
 
 readInput :: String -> IO (Map String [String])
 readInput = fmap parseInput . readFile
 
-findPaths :: Map String [String] -> [[String]]
-findPaths m = catMaybes $ _findPaths m [] "end"
+findPaths :: Map String [String] -> (String -> [String] -> Bool) -> [[String]]
+findPaths m cantVisit = catMaybes $ _findPaths m cantVisit [] "end"
 
 main :: IO ()
 main = do
     connections <- readInput "input.txt"
-    print (length (findPaths connections))
+    print (length (findPaths connections cantVisitSmallCaveTwice))
+    print (length (findPaths connections cantVisitMoreThanOneSmallCaveTwice))
